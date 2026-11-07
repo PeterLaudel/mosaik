@@ -22,3 +22,5 @@ export interface Patient {
   billingInfo: BillingInfo;
   invoicePassword: string | null;
 }
+
+export type PatientCreate = Omit<Patient, "id">;

@@ -243,13 +243,13 @@ src/features/invoices/
   repository.ts     reads/writes, incl. this feature's selectors
   service.ts        business logic used by server actions and routes
   queries.ts        client-side fetch helpers for this feature's API routes
-  index.ts          get*Repository() / get*Service() (server only)
+  index.ts          get*Service() (server only); repositories stay internal
   *.test.ts         tests next to the code they cover
 src/shared/         infrastructure used by several features (outbox, ollama)
 src/app/            routes, pages, server actions and UI components
 ```
 
-`src/app` is where features are composed: a page may read from several features. `index.ts` pulls in the database, so client components import only `model.ts` or `queries.ts`, never the feature's `index.ts`.
+`src/app` is where features are composed: a page may read from several features, but always through their services. Repositories are internal to their feature (not exported from `index.ts`, and `src/app` may not import `@/features/*/repository`), so reads go through the service as well as writes. `index.ts` pulls in the database, so client components import only `model.ts` or `queries.ts`, never the feature's `index.ts`.
 
 ## Features share data, not code
 

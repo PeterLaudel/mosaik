@@ -1,9 +1,7 @@
 import { Database } from "@/initialize";
-import { TreatmentPlan, TreatmentGoal, TherapyForm, TreatmentPhase } from "./model";
+import { TreatmentPlan, TreatmentGoal, TherapyForm, TreatmentPhase, TreatmentPlanCreate, TreatmentPlanUpdate } from "./model";
 import { jsonArrayFrom } from "@/database";
 
-export type TreatmentPlanCreate = Omit<TreatmentPlan, "id" | "createdAt">;
-export type TreatmentPlanUpdate = TreatmentPlanCreate & { id: number };
 
 export class TreatmentPlansRepository {
   constructor(private readonly database: Database) {}

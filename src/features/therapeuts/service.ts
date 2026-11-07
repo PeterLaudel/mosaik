@@ -1,11 +1,12 @@
-import { Therapeut } from "./model";
-import {
-  TherapeutCreate,
-  TherapeutRepository,
-} from "./repository";
+import { Therapeut, TherapeutCreate } from "./model";
+import { TherapeutRepository } from "./repository";
 
 export class TherapeutsService {
   constructor(private readonly therapeutRepository: TherapeutRepository) {}
+
+  async all(): Promise<Therapeut[]> {
+    return this.therapeutRepository.all();
+  }
 
   async create(therapeut: TherapeutCreate): Promise<Therapeut> {
     return this.therapeutRepository.create(therapeut);

@@ -1,6 +1,6 @@
 "use server";
 
-import { InvoiceCreate } from "@/features/invoices/repository";
+import { InvoiceCreate } from "@/features/invoices/model";
 import { getInvoicesService } from "@/features/invoices";
 import { revalidatePath } from "next/cache";
 

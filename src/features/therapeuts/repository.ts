@@ -1,7 +1,6 @@
 import { type Database } from "@/initialize";
-import { Therapeut } from "./model";
+import { Therapeut, TherapeutCreate } from "./model";
 
-export type TherapeutCreate = Omit<Therapeut, "id">;
 
 export class TherapeutRepository {
   constructor(private readonly database: Database) {}

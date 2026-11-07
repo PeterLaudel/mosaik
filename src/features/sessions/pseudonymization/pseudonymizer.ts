@@ -1,5 +1,6 @@
 import dayjs from "dayjs";
-import { getSessionsRepository } from "@/features/sessions";
+import { getDb } from "@/initialize";
+import { SessionsRepository } from "../repository";
 import { generateText } from "@/shared/ollama/client";
 import { PSEUDONYMIZATION_SYSTEM_PROMPT, buildPseudonymizationUserMessage } from "./pseudonymization";
 
@@ -13,7 +14,7 @@ interface PseudonymizationContext {
 }
 
 export async function pseudonymizeSession(sessionId: number): Promise<void> {
-  const sessionsRepository = await getSessionsRepository();
+  const sessionsRepository = new SessionsRepository(getDb());
   const session = await sessionsRepository.find(sessionId);
 
   try {

@@ -1,13 +1,8 @@
 import { Database } from "@/initialize";
-import { Session, SessionPatient } from "./model";
+import { Session, SessionPatient, SessionCreate, SessionUpdate } from "./model";
 import { GivenHomework, ReviewHomework } from "./homework";
 import { sessionSelector } from "./selector";
 import { OutboxRepository } from "@/shared/outbox/repository";
-
-export type SessionCreate = Omit<Session, "id" | "createdAt" | "interventions"> & {
-  interventions: string[];
-};
-export type SessionUpdate = SessionCreate & { id: number };
 
 export class SessionsRepository {
   constructor(private readonly database: Database) {}

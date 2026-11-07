@@ -4,7 +4,7 @@ import {
   QueryClient,
 } from "@tanstack/react-query";
 import { InvoicesList } from "./invoicesList";
-import { getInvoicesRepository } from "@/features/invoices";
+import { getInvoicesService } from "@/features/invoices";
 import { InvoicesQueryKey, invoicesQueryKey } from "@/features/invoices/queries";
 
 export default async function Page({
@@ -18,8 +18,8 @@ export default async function Page({
   await queryClient.prefetchQuery({
     queryKey: invoicesQueryKey(query),
     queryFn: async () => {
-      const repo = await getInvoicesRepository();
-      return repo.filter(query);
+      const invoicesService = await getInvoicesService();
+      return invoicesService.filter(query);
     },
   });
 

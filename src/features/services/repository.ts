@@ -1,8 +1,7 @@
 import { type Database } from "@/initialize";
-import { Amount, Service } from "./model";
+import { Amount, Service, ServiceCreate } from "./model";
 import { serviceSelector } from "./selector";
 
-export type ServiceCreate = Omit<Service, "id">;
 
 export default class ServicesRepository {
   constructor(private readonly database: Database) {}

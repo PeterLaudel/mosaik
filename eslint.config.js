@@ -51,6 +51,17 @@ module.exports = defineConfig([
     globalIgnores(["**/*.d.ts", "playwright-report/**", ".next/**", "**/*.js"]),
     ...featureBoundaries,
     {
+        files: ["src/app/**/*.{ts,tsx}"],
+        rules: {
+            "no-restricted-imports": ["error", {
+                patterns: [{
+                    regex: "^@/features/[a-z-]+/(repository|selectors?)$",
+                    message: "The app layer talks to a feature through its service (get*Service from @/features/<feature>), not its repository.",
+                }],
+            }],
+        },
+    },
+    {
         files: ["src/shared/**/*.{ts,tsx}"],
         rules: {
             "no-restricted-imports": ["error", {

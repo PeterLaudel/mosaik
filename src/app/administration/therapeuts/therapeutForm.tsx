@@ -3,8 +3,7 @@
 import Section from "@/components/section";
 import SubmitButton from "@/components/submitButton";
 import { useSnackbar } from "@/contexts/snackbarProvider";
-import { Therapeut } from "@/features/therapeuts/model";
-import { TherapeutCreate } from "@/features/therapeuts/repository";
+import { Therapeut, TherapeutCreate } from "@/features/therapeuts/model";
 import { TextField } from "@mui/material";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";

@@ -1,15 +1,8 @@
 import { type Database } from "@/initialize";
-import {
-  BillableService,
-  InvoiceIssuer,
-  InvoicePatient,
-  InvoicePosition,
-  type Invoice,
-} from "./model";
+import { BillableService, InvoiceIssuer, InvoicePatient, InvoicePosition, type Invoice, InvoiceCreate } from "./model";
 import { Expression } from "kysely";
 import { billableServiceSelector, invoicePatientSelector, issuerSelector } from "./selectors";
 import { jsonObjectFrom, jsonArrayFrom } from "@/database";
-export type InvoiceCreate = Omit<Invoice, "id">;
 
 export class InvoicesRepository {
   constructor(private readonly database: Database) {}

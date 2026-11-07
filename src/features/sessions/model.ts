@@ -85,3 +85,6 @@ export interface Session {
   pseudonymizedNextPlan: string | null;
   pseudonymizationStatus: PseudonymizationStatus | null;
 }
+
+export type SessionCreate = Omit<Session, "id" | "createdAt">;
+export type SessionUpdate = SessionCreate & { id: number };

@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { getInvoicesService } from "@/features/invoices";
-import { InvoiceCreate } from "@/features/invoices/repository";
+import { InvoiceCreate } from "@/features/invoices/model";
 
 export async function createInvoice(invoice: InvoiceCreate) {
   const invoicesService = await getInvoicesService();

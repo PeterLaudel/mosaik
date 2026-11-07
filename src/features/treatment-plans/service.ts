@@ -14,6 +14,10 @@ export type TreatmentPlanFormData = {
 export class TreatmentPlansService {
   constructor(private readonly treatmentPlansRepository: TreatmentPlansRepository) {}
 
+  async findByPatientId(patientId: number): Promise<TreatmentPlan | null> {
+    return this.treatmentPlansRepository.findByPatientId(patientId);
+  }
+
   async create(patientId: number, data: TreatmentPlanFormData): Promise<TreatmentPlan> {
     return this.treatmentPlansRepository.create({
       patient: { id: patientId },

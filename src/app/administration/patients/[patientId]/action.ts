@@ -1,6 +1,6 @@
 "use server";
 
-import { PatientCreate } from "@/features/patients/repository";
+import { PatientCreate } from "@/features/patients/model";
 import { getPatientsService } from "@/features/patients";
 import { revalidatePath } from "next/cache";
 

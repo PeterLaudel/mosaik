@@ -1,6 +1,6 @@
 "use server";
 
-import { ServiceCreate } from "@/features/services/repository";
+import { ServiceCreate } from "@/features/services/model";
 import { getServicesService } from "@/features/services";
 import { revalidatePath } from "next/cache";
 

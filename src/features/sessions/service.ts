@@ -1,5 +1,5 @@
-import { Session } from "./model";
-import { SessionCreate, SessionsRepository } from "./repository";
+import { Session, SessionCreate } from "./model";
+import { SessionsRepository } from "./repository";
 
 export type PseudonymizationCheckResult =
   | { status: "pending" }
@@ -8,6 +8,24 @@ export type PseudonymizationCheckResult =
 
 export class SessionsService {
   constructor(private readonly sessionsRepository: SessionsRepository) {}
+
+  async find(id: number): Promise<Session> {
+    return this.sessionsRepository.find(id);
+  }
+
+  async filter(
+    params: Parameters<SessionsRepository["filter"]>[0],
+  ): Promise<{ rows: Session[]; total: number }> {
+    return this.sessionsRepository.filter(params);
+  }
+
+  async findOpenSession(patientId: number): Promise<Session | null> {
+    return this.sessionsRepository.findOpenSession(patientId);
+  }
+
+  async findPreviousSession(patientId: number, sessionNumber: number): Promise<Session | null> {
+    return this.sessionsRepository.findPreviousSession(patientId, sessionNumber);
+  }
 
   async createDraft(patientId: number): Promise<Session> {
     const patient = await this.sessionsRepository.findPatient(patientId);

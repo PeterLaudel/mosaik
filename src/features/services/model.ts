@@ -15,3 +15,5 @@ export interface Service {
   points: number;
   amounts: Amount[];
 }
+
+export type ServiceCreate = Omit<Service, "id">;

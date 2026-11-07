@@ -71,3 +71,5 @@ export interface Invoice {
   positions: InvoicePosition[];
   patient: InvoicePatient;
 }
+
+export type InvoiceCreate = Omit<Invoice, "id">;

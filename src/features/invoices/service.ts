@@ -1,14 +1,41 @@
 import { pdfOwnerPassword } from "@/environment";
-import { Invoice } from "./model";
-import {
-  InvoiceCreate,
-  InvoicesRepository,
-} from "./repository";
+import { BillableService, Invoice, InvoiceIssuer, InvoicePatient, InvoiceCreate } from "./model";
+import { InvoicesRepository } from "./repository";
 import { encryptPdf } from "./encryptPdf";
 import mailInvoice from "./mail";
 
 export class InvoicesService {
   constructor(private readonly invoicesRepository: InvoicesRepository) {}
+
+  async find(id: number): Promise<Invoice> {
+    return this.invoicesRepository.find(id);
+  }
+
+  async findByInvoiceNumber(invoiceNumber: string): Promise<Invoice> {
+    return this.invoicesRepository.findByInvoiceNumber(invoiceNumber);
+  }
+
+  async filter(
+    params: Parameters<InvoicesRepository["filter"]>[0],
+  ): Promise<{ rows: Invoice[]; total: number }> {
+    return this.invoicesRepository.filter(params);
+  }
+
+  async findPatients(): Promise<InvoicePatient[]> {
+    return this.invoicesRepository.findPatients();
+  }
+
+  async findBillableServices(): Promise<BillableService[]> {
+    return this.invoicesRepository.findBillableServices();
+  }
+
+  async findIssuer(): Promise<InvoiceIssuer | null> {
+    return this.invoicesRepository.findIssuer();
+  }
+
+  async generateInvoiceNumber(): Promise<string> {
+    return this.invoicesRepository.generateInvoiceNumber();
+  }
 
   async create(invoice: InvoiceCreate): Promise<Invoice> {
     return this.invoicesRepository.create(invoice);

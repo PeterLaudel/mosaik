@@ -15,3 +15,5 @@ export interface Therapeut {
     website: string;
     enr: string;
 }
+
+export type TherapeutCreate = Omit<Therapeut, "id">;

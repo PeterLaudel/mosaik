@@ -9,9 +9,8 @@ import PatientSection from "./patientSection";
 import ServiceSection from "./serviceSection";
 import InvoiceViewer from "./invoiceViewer";
 import SubmitButton from "@/components/submitButton";
-import { InvoiceCreate } from "@/features/invoices/repository";
+import { InvoiceCreate, BillableService, Invoice, InvoiceIssuer, InvoicePatient } from "@/features/invoices/model";
 import { useSnackbar } from "@/contexts/snackbarProvider";
-import { BillableService, Invoice, InvoiceIssuer, InvoicePatient } from "@/features/invoices/model";
 import { useRouter } from "next/navigation";
 import type { InvoicePosition } from "./serviceSection";
 

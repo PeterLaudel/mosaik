@@ -54,3 +54,6 @@ export interface TreatmentPlan {
   createdAt: string;
   goals: TreatmentGoal[];
 }
+
+export type TreatmentPlanCreate = Omit<TreatmentPlan, "id" | "createdAt">;
+export type TreatmentPlanUpdate = TreatmentPlanCreate & { id: number };

@@ -1,8 +1,7 @@
-import { Patient } from "./model";
+import { Patient, PatientCreate } from "./model";
 import { Database } from "@/initialize";
 import { patientSelector } from "./selector";
 
-export type PatientCreate = Omit<Patient, "id">;
 
 export class PatientsRepository {
   constructor(private readonly database: Database) {}

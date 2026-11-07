@@ -1,4 +1,4 @@
-import { getSessionsRepository } from "@/features/sessions";
+import { getSessionsService } from "@/features/sessions";
 import PatientSessionsList from "../../sessions/patientSessionsList";
 
 interface Props {
@@ -8,10 +8,10 @@ interface Props {
 export default async function Page(props: Props) {
   const { patientId } = await props.params;
 
-  const sessionsRepository = await getSessionsRepository();
+  const sessionsService = await getSessionsService();
   const [{ rows: sessions }, openSession] = await Promise.all([
-    sessionsRepository.filter({ patientId: Number(patientId) }),
-    sessionsRepository.findOpenSession(Number(patientId)),
+    sessionsService.filter({ patientId: Number(patientId) }),
+    sessionsService.findOpenSession(Number(patientId)),
   ]);
 
   return <PatientSessionsList patientId={patientId} initialSessions={sessions} openSession={openSession} />;
