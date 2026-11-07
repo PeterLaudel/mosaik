@@ -3,5 +3,8 @@ import { InvoicesRepository } from "./repository";
 import { InvoicesService } from "./service";
 
 export function getInvoicesService(): Promise<InvoicesService> {
-  return Promise.resolve(new InvoicesService(new InvoicesRepository(getDb())));
+  const database = getDb();
+  const invoicesRepository = new InvoicesRepository(database);
+  const service = new InvoicesService(invoicesRepository);
+  return Promise.resolve(service);
 }

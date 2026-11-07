@@ -233,6 +233,23 @@ The React Compiler eslint plugin flags `methods.watch()` inside a `useEffect` as
 const subscription = methods.watch(() => { ... });
 ```
 
+## Keep calls flat
+
+Avoid nesting calls inside calls (`f(g(h(x)))`, `new A(new B(getDb()))`). Give each intermediate result a named variable, one step per line, so the reader follows the data top to bottom.
+
+```ts
+// correct
+const database = getDb();
+const invoicesRepository = new InvoicesRepository(database);
+const service = new InvoicesService(invoicesRepository);
+return Promise.resolve(service);
+
+// wrong
+return Promise.resolve(new InvoicesService(new InvoicesRepository(getDb())));
+```
+
+Fluent query-builder chains (`db.selectFrom(...).where(...).execute()`) are fine; this is about calls passed as arguments to other calls.
+
 ## Code is organized by feature
 
 Everything a feature needs on the server lives in its own folder under `src/features/`:

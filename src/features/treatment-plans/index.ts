@@ -3,5 +3,8 @@ import { TreatmentPlansRepository } from "./repository";
 import { TreatmentPlansService } from "./service";
 
 export function getTreatmentPlansService(): Promise<TreatmentPlansService> {
-  return Promise.resolve(new TreatmentPlansService(new TreatmentPlansRepository(getDb())));
+  const database = getDb();
+  const treatmentPlansRepository = new TreatmentPlansRepository(database);
+  const service = new TreatmentPlansService(treatmentPlansRepository);
+  return Promise.resolve(service);
 }

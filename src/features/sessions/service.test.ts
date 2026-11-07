@@ -10,7 +10,8 @@ describe("SessionsService", () => {
 
   beforeEach(() => {
     const db = getDb();
-    sessionsService = new SessionsService(new SessionsRepository(db));
+    const sessionsRepository = new SessionsRepository(db);
+    sessionsService = new SessionsService(sessionsRepository);
   });
 
   describe("#createDraft", () => {

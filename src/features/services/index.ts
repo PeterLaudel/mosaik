@@ -3,5 +3,8 @@ import ServicesRepository from "./repository";
 import { ServicesService } from "./service";
 
 export function getServicesService(): Promise<ServicesService> {
-  return Promise.resolve(new ServicesService(new ServicesRepository(getDb())));
+  const database = getDb();
+  const servicesRepository = new ServicesRepository(database);
+  const service = new ServicesService(servicesRepository);
+  return Promise.resolve(service);
 }

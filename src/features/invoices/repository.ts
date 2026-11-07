@@ -126,7 +126,8 @@ export class InvoicesRepository {
 
   /** The therapeut issuing invoices, or null while none has been set up yet. */
   public async findIssuer(): Promise<InvoiceIssuer | null> {
-    return (await issuerSelector(this.database).orderBy("id").executeTakeFirst()) ?? null;
+    const issuer = await issuerSelector(this.database).orderBy("id").executeTakeFirst();
+    return issuer ?? null;
   }
 
   private modelSelector(transaction: Database = this.database) {

@@ -19,7 +19,8 @@ describe("InvoicesService", () => {
 
   beforeEach(() => {
     const db = getDb();
-    invoicesService = new InvoicesService(new InvoicesRepository(db));
+    const invoicesRepository = new InvoicesRepository(db);
+    invoicesService = new InvoicesService(invoicesRepository);
     mockedMailInvoice.mockReset();
     mockedEncryptPdf.mockReset();
   });
