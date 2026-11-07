@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { useForm, FormProvider } from "react-hook-form";
 import { TreatmentPlan } from "@/models/treatmentPlan";
-import { upsertTreatmentPlan } from "./actions";
+import { createTreatmentPlan, updateTreatmentPlan } from "./actions";
 import TreatmentPlanForm, { PlanFormValues } from "./treatmentPlanForm";
 import { useSnackbar } from "@/contexts/snackbarProvider";
 
@@ -35,19 +35,18 @@ export default function TreatmentPlanShell({ patientId, initialPlan }: Props) {
 
   const onSubmit = (values: PlanFormValues) => {
     startTransition(async () => {
-      const saved = await upsertTreatmentPlan(
-        patientId,
-        {
-          startDate: values.startDate,
-          endDate: values.endDate || null,
-          therapyForm: values.therapyForm,
-          phase: values.phase,
-          approvedSessions: values.approvedSessions,
-          notes: values.notes || null,
-          goals: values.goals,
-        },
-        plan?.id
-      );
+      const data = {
+        startDate: values.startDate,
+        endDate: values.endDate || null,
+        therapyForm: values.therapyForm,
+        phase: values.phase,
+        approvedSessions: values.approvedSessions,
+        notes: values.notes || null,
+        goals: values.goals,
+      };
+      const saved = plan
+        ? await updateTreatmentPlan(plan.id, data)
+        : await createTreatmentPlan(patientId, data);
       setPlan(saved);
       showSuccessMessage("Behandlungsplan gespeichert");
     });

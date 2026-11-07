@@ -12,15 +12,14 @@ import { Service } from "@/models/service";
 import { Patient } from "@/models/patient";
 import SubmitButton from "@/components/submitButton";
 import { Therapeut } from "@/models/therapeut";
-import { InvoiceSave } from "@/repositories/invoicesRepository";
+import { InvoiceCreate } from "@/repositories/invoicesRepository";
 import { useSnackbar } from "@/contexts/snackbarProvider";
 import { Invoice } from "@/models/invoice";
 import { useRouter } from "next/navigation";
 import type { InvoicePosition } from "./serviceSection";
 
 interface Props {
-  invoiceId?: number;
-  action: (invoice: InvoiceSave) => Promise<Invoice>;
+  action: (invoice: InvoiceCreate) => Promise<Invoice>;
   patients: Patient[];
   services: Service[];
   therapeut: Therapeut;
@@ -37,7 +36,6 @@ export type FormInvoice = {
 };
 
 export default function InvoiceForm({
-  invoiceId,
   action,
   patients,
   services,
@@ -64,7 +62,6 @@ export default function InvoiceForm({
   const onSubmit = (values: FormInvoice) => {
     startTransition(async () => {
       const invoice = await action({
-        id: invoiceId,
         patient: values.patient!,
         invoiceNumber: values.invoiceNumber,
         base64Pdf: values.base64Pdf!,

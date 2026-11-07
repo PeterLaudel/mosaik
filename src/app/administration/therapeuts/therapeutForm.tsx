@@ -4,7 +4,7 @@ import Section from "@/components/section";
 import SubmitButton from "@/components/submitButton";
 import { useSnackbar } from "@/contexts/snackbarProvider";
 import { Therapeut } from "@/models/therapeut";
-import { TherapeutSave } from "@/repositories/therapeutRepository";
+import { TherapeutCreate } from "@/repositories/therapeutRepository";
 import { TextField } from "@mui/material";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
@@ -13,7 +13,7 @@ import { Controller, useForm } from "react-hook-form";
 import { TherapeutFormData, therapeutSchema } from "./validateTherapeut";
 
 interface Props {
-  action: (data: TherapeutSave) => Promise<void>;
+  action: (data: TherapeutCreate) => Promise<void>;
   therapeut?: Therapeut;
 }
 
@@ -25,7 +25,6 @@ export function TherapeutForm({ action, therapeut }: Props) {
   const { control, handleSubmit, formState: { isSubmitting } } = useForm<TherapeutFormData>({
     resolver: zodResolver(therapeutSchema),
     defaultValues: {
-      id: therapeut?.id,
       title: therapeut?.title ?? "",
       name: therapeut?.name ?? "",
       surname: therapeut?.surname ?? "",

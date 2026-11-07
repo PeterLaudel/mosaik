@@ -34,11 +34,11 @@ describe("PatientsRepository", () => {
     });
   });
 
-  describe("#save", () => {
+  describe("#create", () => {
     it("creates a new patient", async () => {
       const patientAttributes = patientFactory.build();
 
-      const patient = await patientRepository.save(patientAttributes);
+      const patient = await patientRepository.create(patientAttributes);
 
       expect(patient).toEqual({
         id: expect.any(Number),
@@ -46,10 +46,13 @@ describe("PatientsRepository", () => {
       });
     });
 
+  });
+
+  describe("#update", () => {
     it("updates an existing patient", async () => {
       const patient = await patientFactory.create();
 
-      const updatedPatient = await patientRepository.save({
+      const updatedPatient = await patientRepository.update({
         ...patient,
         diagnosis: "nono",
       });

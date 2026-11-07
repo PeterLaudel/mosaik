@@ -3,7 +3,8 @@ import { TreatmentPlan, TreatmentGoal, TherapyForm, TreatmentPhase } from "@/mod
 import { jsonArrayFrom, jsonObjectFrom } from "@/database";
 import { patientSelector } from "./selectors/patient";
 
-export type TreatmentPlanSave = Omit<TreatmentPlan, "id" | "createdAt"> & { id?: number };
+export type TreatmentPlanCreate = Omit<TreatmentPlan, "id" | "createdAt">;
+export type TreatmentPlanUpdate = TreatmentPlanCreate & { id: number };
 
 export class TreatmentPlansRepository {
   constructor(private readonly database: Database) {}
@@ -27,49 +28,51 @@ export class TreatmentPlansRepository {
     return this.toModel(row);
   }
 
-  async save(plan: TreatmentPlanSave): Promise<TreatmentPlan> {
-    // find() uses this.database; must be called after the transaction commits to avoid
-    // SQLite single-connection deadlock (same pattern as InvoicesRepository.modelSelector(trx))
+  // find() uses this.database, so create/update call it after the transaction commits to avoid
+  // a SQLite single-connection deadlock (same pattern as InvoicesRepository.modelSelector(trx)).
+  async create(plan: TreatmentPlanCreate): Promise<TreatmentPlan> {
     const id = await this.database.transaction().execute(async (trx) => {
-      const { id: savedId } = plan.id
-        ? await trx
-            .updateTable("treatment_plans")
-            .set({
-              patientId: plan.patient.id,
-              therapeutId: plan.therapeutId,
-              startDate: plan.startDate,
-              endDate: plan.endDate,
-              therapyForm: plan.therapyForm,
-              phase: plan.phase,
-              approvedSessions: plan.approvedSessions,
-              notes: plan.notes,
-            })
-            .returning(["id"])
-            .where("treatment_plans.id", "=", plan.id)
-            .executeTakeFirstOrThrow()
-        : await trx
-            .insertInto("treatment_plans")
-            .values({
-              patientId: plan.patient.id,
-              therapeutId: plan.therapeutId,
-              startDate: plan.startDate,
-              endDate: plan.endDate,
-              therapyForm: plan.therapyForm,
-              phase: plan.phase,
-              approvedSessions: plan.approvedSessions,
-              notes: plan.notes,
-            })
-            .returning(["id"])
-            .executeTakeFirstOrThrow();
+      const { id: createdId } = await trx
+        .insertInto("treatment_plans")
+        .values(this.toRow(plan))
+        .returning(["id"])
+        .executeTakeFirstOrThrow();
 
-      await this.upsertGoals(savedId, plan.goals, trx);
-      return savedId;
+      await this.replaceGoals(createdId, plan.goals, trx);
+      return createdId;
     });
 
     return this.find(id);
   }
 
-  private async upsertGoals(planId: number, goals: TreatmentGoal[], trx: Database) {
+  async update(plan: TreatmentPlanUpdate): Promise<TreatmentPlan> {
+    await this.database.transaction().execute(async (trx) => {
+      await trx
+        .updateTable("treatment_plans")
+        .set(this.toRow(plan))
+        .where("treatment_plans.id", "=", plan.id)
+        .executeTakeFirstOrThrow();
+
+      await this.replaceGoals(plan.id, plan.goals, trx);
+    });
+
+    return this.find(plan.id);
+  }
+
+  private toRow(plan: TreatmentPlanCreate) {
+    return {
+      patientId: plan.patient.id,
+      therapeutId: plan.therapeutId,
+      startDate: plan.startDate,
+      endDate: plan.endDate,
+      therapyForm: plan.therapyForm,
+      phase: plan.phase,
+      approvedSessions: plan.approvedSessions,
+      notes: plan.notes,
+    };
+  }
+
+  private async replaceGoals(planId: number, goals: TreatmentGoal[], trx: Database) {
     await trx
       .deleteFrom("treatment_goals")
       .where("treatment_goals.treatmentPlanId", "=", planId)

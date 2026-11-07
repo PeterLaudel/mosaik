@@ -2,7 +2,7 @@ import { Patient } from "@/models/patient";
 import { Database } from "@/initialize";
 import { patientSelector } from "./selectors/patient";
 
-export type PatientSave = Omit<Patient, "id"> & { id?: number };
+export type PatientCreate = Omit<Patient, "id">;
 
 export class PatientsRepository {
   constructor(private readonly database: Database) {}
@@ -53,31 +53,28 @@ export class PatientsRepository {
     return await patientSelector(this.database).execute();
   }
 
-  async save(patient: PatientSave): Promise<Patient> {
+  async create(patient: PatientCreate): Promise<Patient> {
     return await this.database.transaction().execute(async (trx) => {
-      const { address, billingInfo, id: originId, ...rest } = patient;
-      const data = {
-        ...rest,
-        ...address,
-        billingName: billingInfo.name,
-        billingSurname: billingInfo.surname,
-        billingEmail: billingInfo.email,
-        billingStreet: billingInfo.address.street,
-        billingCity: billingInfo.address.city,
-        billingZip: billingInfo.address.zip,
-      };
-      const { id } = originId
-        ? await trx
-            .updateTable("patients")
-            .set(data)
-            .returning(["id"])
-            .where("patients.id", "=", originId)
-            .executeTakeFirstOrThrow()
-        : await trx
-            .insertInto("patients")
-            .values(data)
-            .returning(["id"])
-            .executeTakeFirstOrThrow();
+      const { id } = await trx
+        .insertInto("patients")
+        .values(this.toRow(patient))
+        .returning(["id"])
+        .executeTakeFirstOrThrow();
+
+      return await patientSelector(trx)
+        .where("patients.id", "=", id)
+        .executeTakeFirstOrThrow();
+    });
+  }
+
+  async update(patient: Patient): Promise<Patient> {
+    return await this.database.transaction().execute(async (trx) => {
+      const { id, ...data } = patient;
+      await trx
+        .updateTable("patients")
+        .set(this.toRow(data))
+        .where("patients.id", "=", id)
+        .executeTakeFirstOrThrow();
 
       return await patientSelector(trx)
         .where("patients.id", "=", id)
@@ -90,5 +87,19 @@ export class PatientsRepository {
       .deleteFrom("patients")
       .where("id", "=", patientId)
       .execute();
+  }
+
+  private toRow(patient: PatientCreate) {
+    const { address, billingInfo, ...rest } = patient;
+    return {
+      ...rest,
+      ...address,
+      billingName: billingInfo.name,
+      billingSurname: billingInfo.surname,
+      billingEmail: billingInfo.email,
+      billingStreet: billingInfo.address.street,
+      billingCity: billingInfo.address.city,
+      billingZip: billingInfo.address.zip,
+    };
   }
 }

@@ -1,6 +1,9 @@
 import { pdfOwnerPassword } from "@/environment";
 import { Invoice } from "@/models/invoice";
-import { InvoiceSave, InvoicesRepository } from "@/repositories/invoicesRepository";
+import {
+  InvoiceCreate,
+  InvoicesRepository,
+} from "@/repositories/invoicesRepository";
 import { TherapeutRepository } from "@/repositories/therapeutRepository";
 import { encryptPdf } from "./encryptPdf";
 import mailInvoice from "./mailInvoice";
@@ -11,13 +14,17 @@ export class InvoicesService {
     private readonly therapeutRepository: TherapeutRepository,
   ) {}
 
-  async save(invoice: InvoiceSave): Promise<Invoice> {
-    return this.invoicesRepository.save(invoice);
+  async create(invoice: InvoiceCreate): Promise<Invoice> {
+    return this.invoicesRepository.create(invoice);
+  }
+
+  async update(invoice: Invoice): Promise<Invoice> {
+    return this.invoicesRepository.update(invoice);
   }
 
   async updateStatus(invoiceId: number, status: Invoice["status"]): Promise<Invoice> {
     const invoice = await this.invoicesRepository.find(invoiceId);
-    return this.invoicesRepository.save({ ...invoice, status });
+    return this.invoicesRepository.update({ ...invoice, status });
   }
 
   async sendByEmail(invoiceId: number): Promise<Invoice> {
@@ -32,7 +39,7 @@ export class InvoicesService {
 
     await mailInvoice(therapeut, { ...invoice, base64Pdf });
 
-    return this.invoicesRepository.save({ ...invoice, status: "sent" });
+    return this.invoicesRepository.update({ ...invoice, status: "sent" });
   }
 
   async delete(invoiceId: number): Promise<void> {

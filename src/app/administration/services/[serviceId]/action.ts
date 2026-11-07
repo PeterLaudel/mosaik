@@ -1,12 +1,12 @@
 "use server";
 
-import { ServiceSave } from "@/repositories/servicesRepository";
+import { ServiceCreate } from "@/repositories/servicesRepository";
 import { getServicesService } from "@/services";
 import { revalidatePath } from "next/cache";
 
-export async function updateService(data: ServiceSave): Promise<void> {
+export async function updateService(id: number, data: ServiceCreate): Promise<void> {
   const servicesService = await getServicesService();
-  await servicesService.save(data);
-  revalidatePath(`/administration/services/${data.id}`);
+  await servicesService.update({ ...data, id });
+  revalidatePath(`/administration/services/${id}`);
   revalidatePath("/administration/services");
 }

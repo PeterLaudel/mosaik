@@ -14,13 +14,13 @@ import { Patient } from "@/models/patient";
 import SubmitButton from "@/components/submitButton";
 import { useSnackbar } from "@/contexts/snackbarProvider";
 import { useRouter } from "next/navigation";
-import { PatientSave } from "@/repositories/patientsRepository";
+import { PatientCreate } from "@/repositories/patientsRepository";
 import { billingInfoIsPatient } from "./billingInfoIsPatient";
 import InvoiceSection from "./invoiceSection";
 import { patientFormSchema, PatientFormData } from "./schema";
 
 interface Props {
-  action: (patient: PatientSave) => Promise<void>;
+  action: (patient: PatientCreate) => Promise<void>;
   initialValues?: Patient;
 }
 
@@ -32,7 +32,6 @@ export default function PatientForm({ initialValues, action }: Props) {
   const methods = useForm<PatientFormData>({
     resolver: zodResolver(patientFormSchema),
     defaultValues: {
-      id: initialValues?.id,
       name: initialValues?.name ?? "",
       surname: initialValues?.surname ?? "",
       email: initialValues?.email ?? "",

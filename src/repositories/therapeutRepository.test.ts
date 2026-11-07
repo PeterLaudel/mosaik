@@ -19,11 +19,11 @@ describe("TherapeutRepository", () => {
     });
   });
 
-  describe("#save", () => {
-    it("creates a new therapeut if id is not provided", async () => {
+  describe("#create", () => {
+    it("creates a new therapeut", async () => {
       const db = getDb();
       const therapeutData = therapeutFactory.build();
-      const savedTherapeut = await therapeutRepository.save(therapeutData);
+      const savedTherapeut = await therapeutRepository.create(therapeutData);
 
       expect(savedTherapeut).toMatchObject(therapeutData);
       // check if there is an entry in the db
@@ -35,11 +35,14 @@ describe("TherapeutRepository", () => {
       expect(all.length).toBe(1);
     });
 
-    it("updates an existing therapeut if id is provided", async () => {
+  });
+
+  describe("#update", () => {
+    it("updates an existing therapeut", async () => {
       const db = getDb();
       const therapeut = await therapeutFactory.create();
       const updatedData = { ...therapeut, name: "Updated Name" };
-      const savedTherapeut = await therapeutRepository.save(updatedData);
+      const savedTherapeut = await therapeutRepository.update(updatedData);
 
       expect(savedTherapeut).toMatchObject(updatedData);
       // check if there is an entry in the db

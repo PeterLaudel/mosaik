@@ -7,7 +7,6 @@ const addressSchema = z.object({
 });
 
 export const patientFormSchema = z.object({
-  id: z.number().optional(),
   name: z.string().min(1, "Dieses Feld ist erforderlich"),
   surname: z.string().min(1, "Dieses Feld ist erforderlich"),
   email: z.email("Bitte geben Sie eine gültige E-Mail-Adresse ein"),

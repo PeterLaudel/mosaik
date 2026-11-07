@@ -255,12 +255,12 @@ This ensures callers always have access to the full entity graph without a secon
 
 ## One-to-many child collections are saved atomically with their parent
 
-When a model owns a list of children (e.g. `TreatmentPlan.goals`, `Invoice.positions`), the repository must save the children as part of the parent `save()` call using a transaction — delete all existing children for that parent, then reinsert from the array in the payload.
+When a model owns a list of children (e.g. `TreatmentPlan.goals`, `Invoice.positions`), the repository must save the children as part of the parent `create()` / `update()` call using a transaction — delete all existing children for that parent, then reinsert from the array in the payload.
 
 Do not expose individual `saveChild` / `deleteChild` methods on the repository for children that are always managed through their parent.
 
 ```ts
-private async upsertGoals(planId: number, goals: TreatmentGoal[], trx: Database) {
+private async replaceGoals(planId: number, goals: TreatmentGoal[], trx: Database) {
   await trx.deleteFrom("treatment_goals").where("treatmentPlanId", "=", planId).execute();
   if (goals.length === 0) return;
   await trx.insertInto("treatment_goals").values(
@@ -271,19 +271,25 @@ private async upsertGoals(planId: number, goals: TreatmentGoal[], trx: Database)
 
 The child model type contains only data fields — no `id`, no parent FK, no `createdAt`. These are DB implementation details managed by the repository.
 
-## Repository write methods are always named `save`
+## Repository writes are split into `create` and `update`
 
-Use `save` for both insert and update — never `create`, `insert`, `update`, or `upsert`. The method detects which operation to perform based on whether an `id` is present on the payload.
+Each repository exposes a separate `create` and `update` method. Never write a combined `save`/`upsert` that branches on whether an `id` is present: inserting and updating are different responsibilities (an update may need the previous state, for example to detect a status transition), and a combined method hides which one a caller actually performs.
+
+Each repository exports an `XCreate` payload type next to the class: the model without `id` (and without other DB-managed columns such as `createdAt`). `update` takes the model itself. Only when the model carries DB-managed columns that callers must not send (e.g. `createdAt` on `Session` and `TreatmentPlan`) does the repository also export `XUpdate = XCreate & { id: number }`; don't add an `XUpdate` alias that is structurally identical to the model.
 
 ```ts
-async save(plan: TreatmentPlanSave): Promise<TreatmentPlan> {
-  const { id: originId, ... } = plan;
-  const { id } = originId
-    ? await trx.updateTable(...).executeTakeFirstOrThrow()
-    : await trx.insertInto(...).executeTakeFirstOrThrow();
+async create(plan: TreatmentPlanCreate): Promise<TreatmentPlan> {
+  const { id } = await trx.insertInto("treatment_plans").values(this.toRow(plan))...
   return this.find(id);
 }
+
+async update(plan: TreatmentPlanUpdate): Promise<TreatmentPlan> {
+  await trx.updateTable("treatment_plans").set(this.toRow(plan)).where("id", "=", plan.id)...
+  return this.find(plan.id);
+}
 ```
+
+Shared column mapping lives in a private `toRow` helper, and child collections in a private `replaceX` helper, so `create` and `update` do not duplicate it. Services and server actions follow the same split. Forms shared by a create and an edit page do not carry an `id`: the edit page binds it into the update action (`updatePatient.bind(null, patient.id)`), so the form only ever submits an `XCreate` payload.
 
 ## Repository methods take models, not raw IDs
 

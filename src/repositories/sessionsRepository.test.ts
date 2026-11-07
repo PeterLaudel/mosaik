@@ -134,11 +134,11 @@ describe("SessionsRepository", () => {
     });
   });
 
-  describe("#save", () => {
+  describe("#create", () => {
     it("creates a new session", async () => {
       const patient = await patientFactory.create();
 
-      const session = await sessionsRepository.save({
+      const session = await sessionsRepository.create({
         patient,
         therapeutId: null,
         sessionDate: "2024-06-01",
@@ -175,7 +175,7 @@ describe("SessionsRepository", () => {
       const patient = await patientFactory.create();
       const interventions = ["Psychoedukation", "EMDR"];
 
-      const session = await sessionsRepository.save({
+      const session = await sessionsRepository.create({
         patient,
         therapeutId: null,
         sessionDate: "2024-06-01",
@@ -201,13 +201,50 @@ describe("SessionsRepository", () => {
       expect(session.interventions).toEqual(interventions);
     });
 
+    it("enqueues a session.finalized outbox event and marks pseudonymization pending when created as final", async () => {
+      const patient = await patientFactory.create();
+
+      const session = await sessionsRepository.create({
+        patient,
+        therapeutId: null,
+        sessionDate: "2024-06-01",
+        sessionNumber: 1,
+        durationMinutes: 50,
+        sessionType: "Einzelgespräch",
+        phase: null,
+        moodStart: null,
+        moodEnd: null,
+        riskLevel: null,
+        interventions: [],
+        clinicalNotes: null,
+        nextSessionPlan: null,
+        status: "final",
+        deletedAt: null,
+        pseudonymizedNotes: null,
+        pseudonymizedNextPlan: null,
+        pseudonymizationStatus: null,
+        givenHomework: [],
+        reviewHomework: [],
+      });
+
+      const outboxRows = await getDb().selectFrom("outbox").selectAll().execute();
+      expect(outboxRows).toHaveLength(1);
+      expect(outboxRows[0]).toMatchObject({
+        eventType: "session.finalized",
+        payload: { sessionId: session.id },
+      });
+      expect(session.pseudonymizationStatus).toBe("pending");
+    });
+  });
+
+  describe("#update", () => {
     it("updates an existing session", async () => {
       const patient = await patientFactory.create();
       const session = await sessionFactory.create({
         patientId: patient.id
       });
 
-      const updated = await sessionsRepository.save({
+      const updated = await sessionsRepository.update({
         ...session,
         patient,
         sessionType: session.sessionType as Session["sessionType"],
@@ -230,7 +267,7 @@ describe("SessionsRepository", () => {
       const patient = await patientFactory.create();
       const session = await sessionFactory.create({ patientId: patient.id, status: "draft" });
 
-      await sessionsRepository.save({
+      await sessionsRepository.update({
         ...session,
         patient,
         sessionType: session.sessionType as Session["sessionType"],
@@ -261,11 +298,11 @@ describe("SessionsRepository", () => {
       expect(row.pseudonymizationStatus).toBe("pending");
     });
 
-    it("does not enqueue a second outbox event when saving an already-final session again", async () => {
+    it("does not enqueue a second outbox event when updating an already-final session", async () => {
       const patient = await patientFactory.create();
       const session = await sessionFactory.create({ patientId: patient.id, status: "final" });
 
-      await sessionsRepository.save({
+      await sessionsRepository.update({
         ...session,
         patient,
         sessionType: session.sessionType as Session["sessionType"],

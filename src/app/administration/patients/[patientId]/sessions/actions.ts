@@ -2,7 +2,7 @@
 
 import { getSessionsService } from "@/services";
 import { Session } from "@/models/session";
-import { SessionSave } from "@/repositories/sessionsRepository";
+import { SessionCreate } from "@/repositories/sessionsRepository";
 
 export async function createSession(patientId: number): Promise<Session> {
   const sessionsService = await getSessionsService();
@@ -11,7 +11,7 @@ export async function createSession(patientId: number): Promise<Session> {
 
 export async function updateSession(
   id: number,
-  data: Partial<SessionSave>,
+  data: Partial<SessionCreate>,
 ): Promise<Session> {
   const sessionsService = await getSessionsService();
   return sessionsService.update(id, data);
