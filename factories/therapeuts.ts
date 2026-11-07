@@ -1,13 +1,14 @@
 import { Factory } from "fishery";
-import { getDb } from "@/initialize";
-import type { Therapeut } from "@/features/therapeuts/model";
 import { faker } from "@faker-js/faker";
+import { Insertable, Selectable } from "kysely";
+import { getDb } from "@/initialize";
+import { Database } from "@/db";
 
-export const therapeutFactory = Factory.define<
-  Omit<Therapeut, "id">,
-  unknown,
-  Therapeut
->(() => ({
+type TherapeutRow = Database["therapeuts"];
+type TherapeutBuild = Omit<Insertable<TherapeutRow>, "id">;
+type TherapeutCreated = Selectable<TherapeutRow>;
+
+export const therapeutFactory = Factory.define<TherapeutBuild, unknown, TherapeutCreated>(() => ({
   title: faker.person.prefix(),
   name: faker.person.firstName(),
   surname: faker.person.lastName(),
@@ -22,12 +23,7 @@ export const therapeutFactory = Factory.define<
   bic: faker.finance.bic(),
   website: faker.internet.url(),
   enr: faker.string.numeric(10),
-})).onCreate(async (therapeut) => {
-  const createdTherapeut = await getDb()
-    .insertInto("therapeuts")
-    .values(therapeut)
-    .returningAll()
-    .executeTakeFirstOrThrow();
-
-  return createdTherapeut;
+})).onCreate(async (attrs) => {
+  const db = getDb();
+  return db.insertInto("therapeuts").values(attrs).returningAll().executeTakeFirstOrThrow();
 });

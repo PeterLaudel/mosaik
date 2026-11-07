@@ -1,4 +1,4 @@
-import { serviceFactory } from "factories/service";
+import { serviceFactory } from "factories/services";
 import { test, expect } from "../fixtures";
 
 test("updates a service", async ({ page }) => {

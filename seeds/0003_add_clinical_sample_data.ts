@@ -1,7 +1,7 @@
 import { getDb } from "../src/initialize";
-import { patientFactory } from "../factories/patient";
-import { sessionFactory } from "../factories/session";
-import { givenHomeworkFactory, reviewHomeworkFactory } from "../factories/homework";
+import { patientFactory } from "factories/patients";
+import { sessionFactory } from "factories/sessions";
+import { homeworkFactory } from "factories/homework";
 
 async function createTreatmentPlan(patientId: number) {
   const db = getDb();
@@ -54,8 +54,8 @@ export async function seed() {
     nextSessionPlan: "Stimmungstagebuch einführen, Verhaltensaktivierung besprechen.",
   });
 
-  await givenHomeworkFactory.create({ sessionId: s1.id, description: "Stimmungstagebuch täglich ausfüllen" });
-  await givenHomeworkFactory.create({ sessionId: s1.id, description: "Liste angenehmer Aktivitäten erstellen" });
+  await homeworkFactory.create({ type: "given", sessionId: s1.id, description: "Stimmungstagebuch täglich ausfüllen" });
+  await homeworkFactory.create({ type: "given", sessionId: s1.id, description: "Liste angenehmer Aktivitäten erstellen" });
 
   const s2 = await sessionFactory.create({
     patientId: anna.id,
@@ -73,11 +73,11 @@ export async function seed() {
   });
 
   // reviewHomework on s2 — copied from s1's givenHomework at session creation
-  await reviewHomeworkFactory.create({ sessionId: s2.id, description: "Stimmungstagebuch täglich ausfüllen", status: "partial" });
-  await reviewHomeworkFactory.create({ sessionId: s2.id, description: "Liste angenehmer Aktivitäten erstellen", status: "done" });
+  await homeworkFactory.create({ type: "review", sessionId: s2.id, description: "Stimmungstagebuch täglich ausfüllen", status: "partial" });
+  await homeworkFactory.create({ type: "review", sessionId: s2.id, description: "Liste angenehmer Aktivitäten erstellen", status: "done" });
 
-  await givenHomeworkFactory.create({ sessionId: s2.id, description: "Gedankenprotokoll für 3 belastende Situationen ausfüllen" });
-  await givenHomeworkFactory.create({ sessionId: s2.id, description: "Jeden Tag eine Aktivität aus der Liste umsetzen" });
+  await homeworkFactory.create({ type: "given", sessionId: s2.id, description: "Gedankenprotokoll für 3 belastende Situationen ausfüllen" });
+  await homeworkFactory.create({ type: "given", sessionId: s2.id, description: "Jeden Tag eine Aktivität aus der Liste umsetzen" });
 
   // Draft session (session 3) — reviewHomework copied from s2's givenHomework
   const s3 = await sessionFactory.create({
@@ -95,8 +95,8 @@ export async function seed() {
     nextSessionPlan: null,
   });
 
-  await reviewHomeworkFactory.create({ sessionId: s3.id, description: "Gedankenprotokoll für 3 belastende Situationen ausfüllen", status: "open" });
-  await reviewHomeworkFactory.create({ sessionId: s3.id, description: "Jeden Tag eine Aktivität aus der Liste umsetzen", status: "open" });
+  await homeworkFactory.create({ type: "review", sessionId: s3.id, description: "Gedankenprotokoll für 3 belastende Situationen ausfüllen", status: "open" });
+  await homeworkFactory.create({ type: "review", sessionId: s3.id, description: "Jeden Tag eine Aktivität aus der Liste umsetzen", status: "open" });
 
   // Patient 2 — early stage, only probatoric sessions done
   const markus = await patientFactory.create({
@@ -120,7 +120,7 @@ export async function seed() {
     nextSessionPlan: "Psychoedukation zu Angst und Panik vertiefen.",
   });
 
-  await givenHomeworkFactory.create({ sessionId: m1.id, description: "Informationsblatt zu Panikattacken lesen" });
+  await homeworkFactory.create({ type: "given", sessionId: m1.id, description: "Informationsblatt zu Panikattacken lesen" });
 
   // Draft session for Markus — reviewHomework copied from m1's givenHomework
   const m2 = await sessionFactory.create({
@@ -138,5 +138,5 @@ export async function seed() {
     nextSessionPlan: null,
   });
 
-  await reviewHomeworkFactory.create({ sessionId: m2.id, description: "Informationsblatt zu Panikattacken lesen", status: "open" });
+  await homeworkFactory.create({ type: "review", sessionId: m2.id, description: "Informationsblatt zu Panikattacken lesen", status: "open" });
 }

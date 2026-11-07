@@ -1,8 +1,8 @@
 import { getDb } from "@/initialize";
 import { SessionsRepository } from "./repository";
-import { givenHomeworkFactory } from "factories/homework";
-import { patientFactory } from "factories/patient";
-import { sessionFactory } from "factories/session";
+import { homeworkFactory } from "factories/homework";
+import { patientFactory } from "factories/patients";
+import { sessionFactory } from "factories/sessions";
 import { SessionsService } from "./service";
 
 describe("SessionsService", () => {
@@ -34,7 +34,7 @@ describe("SessionsService", () => {
     it("carries the previous session's given homework over as open review homework", async () => {
       const patient = await patientFactory.create();
       const previous = await sessionFactory.create({ patientId: patient.id, sessionNumber: 1 });
-      await givenHomeworkFactory.create({ sessionId: previous.id, description: "Tagebuch führen" });
+      await homeworkFactory.create({ type: "given", sessionId: previous.id, description: "Tagebuch führen" });
 
       const session = await sessionsService.createDraft(patient.id);
 

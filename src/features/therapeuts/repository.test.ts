@@ -1,4 +1,4 @@
-import { therapeutFactory } from "factories/therapeut";
+import { therapeutFactory } from "factories/therapeuts";
 import { TherapeutRepository } from "./repository";
 import { getDb } from "@/initialize";
 

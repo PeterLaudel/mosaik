@@ -29,7 +29,7 @@ CI=true npm run e2e # playwright e2e tests (CI=true disables retries and the bro
 Every user-facing feature must have Playwright e2e tests in `e2e/<feature>/`. Tests use the custom `test` fixture from `e2e/fixtures.ts`, which injects an auth cookie and clears the database after each test. Seed data goes through factories — never raw DB calls in spec files.
 
 ```ts
-import { patientFactory } from "factories/patient";
+import { patientFactory } from "factories/patients";
 import { test, expect } from "../fixtures";
 
 test("creates a treatment plan and shows success message", async ({ page }) => {
@@ -194,27 +194,46 @@ const db = getDb();
 await db.insertInto("sessions").values({ ... }).execute();
 ```
 
+## Factories are table-wise: one factory per table
+
+Each table has exactly one factory in `factories/`, in a file named after the table (`factories/patients.ts`, `factories/serviceAmounts.ts`, `factories/treatmentGoals.ts`). A factory builds and inserts one row of its table and returns that row:
+
+- Build type: `Omit<Insertable<Database["<table>"]>, "id" | <generated columns>>`
+- Created type: `Selectable<Database["<table>"]>`
+
+Factories never use feature models (`Patient`, `Service`, ...), never assemble nested shapes (no `address` / `billingInfo` sub-factories), and never insert into a second table. A test that needs a service with prices creates the `services` row and its `serviceAmounts` rows explicitly. JSON columns are passed as strings, matching what the DB actually stores.
+
+```ts
+const service = await serviceFactory.create({ short: "Super short" });
+await serviceAmountFactory.create({ serviceId: service.id, factor: "2.3", price: 23 });
+```
+
+Tests that check how a repository maps rows into a model build the expected model from the row explicitly, instead of comparing against a factory result that already has the model's shape.
+
 ## Factories must respect overridden foreign keys
 
-Factories use raw DB types (`Insertable<Table>` / `Selectable<Table>`) — that is intentional and correct. JSON columns are passed as strings, matching what the DB actually stores.
-
-However, when `onCreate` creates a required association (e.g. a patient before a session), it must check whether the caller already supplied the foreign key before creating a new record. If `onCreate` always creates and overwrites, passing `patientId` in overrides has no effect:
+When `onCreate` needs a parent row (a patient before a session), it creates one only if the caller did not pass the foreign key. If `onCreate` always creates and overwrites, passing `patientId` in overrides has no effect:
 
 ```ts
 // this silently creates a second, unrelated patient and uses that id instead
 await sessionFactory.create({ patientId: existingPatient.id });
 ```
 
-The fix is to reuse the supplied key when present:
+Make the foreign key optional in the build type and reuse it when present:
 
 ```ts
 .onCreate(async (attrs) => {
-  const patientId = attrs.patientId ?? (await patientFactory.create()).id;
-  return getDb().insertInto("sessions").values({ ...attrs, patientId })...
+  let { patientId } = attrs;
+  if (patientId === undefined) {
+    const patient = await patientFactory.create();
+    patientId = patient.id;
+  }
+  const db = getDb();
+  return db.insertInto("sessions").values({ ...attrs, patientId }).returningAll().executeTakeFirstOrThrow();
 })
 ```
 
-This lets tests share associations across factory calls without unnecessary DB inserts.
+Never default a foreign key to `sequence` or another made-up id: it points at a row that may not exist. This lets tests share associations across factory calls without unnecessary DB inserts.
 
 ## Floating promises must be marked with `void`
 

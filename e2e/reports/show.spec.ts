@@ -1,4 +1,4 @@
-import { sessionFactory } from "factories/session";
+import { sessionFactory } from "factories/sessions";
 import { test, expect } from "../fixtures";
 
 test("shows the pseudonymized text and confirms once pseudonymization is done", async ({ page }) => {
