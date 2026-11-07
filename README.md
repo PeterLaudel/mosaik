@@ -1,49 +1,33 @@
-# Web page
+# Mosaik
 
-This is a website for a psychotherapy practice. Written in nextjs and deployed with vercel. The page can be accessed with www.psychotherapie-seliger.de. The repo contains a public area where the homepage is published. And it does have a private area for administration of patients and invoices.
+Practice management for psychotherapists: patients, sessions, treatment plans, homework and invoices. Built with Next.js and shipped as a macOS desktop app with Tauri.
 
-# Example
+The public practice homepage used to live in this repository. It now lives in [psychotherapie-seliger](https://github.com/PeterLaudel/psychotherapie-seliger).
 
+## Features
 
-https://github.com/user-attachments/assets/7ea487de-fc7b-4cc2-b294-5af0399acab6
+- Patient records with encrypted personal data and diagnoses
+- Sessions with clinical notes, homework assignment and review
+- Treatment plans
+- Services (GOP positions) and therapist profiles
+- Invoices as PDF with SEPA QR code and embedded ZUGFeRD/Factur-X XML, optionally encrypted and sent by mail
 
+## Development
 
-
-# Development
-
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
-
-## Getting Started
-
-First, run the development server:
-
-```bash
+```sh
+npm install
+npm run db:create
+npm run db:migrate
+npm run db:seed
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000). In development the auth middleware is disabled.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+The database dialect is chosen with `DATABASE_DIALECT` (`sqlite` or `postgres`), see `.env.development`.
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+See [docs/guidelines.md](docs/guidelines.md) for coding conventions and the checks to run before committing.
 
-## Learn More
+## Desktop app
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+`npx tauri build` runs `build.sh`, which bundles the Next.js server with `pkg` as a Tauri sidecar. The installed app keeps its database and `.env` in `~/Library/Application Support/psychotherapie-seliger`. That folder name predates the rename and is kept so existing installations keep their data.

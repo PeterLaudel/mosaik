@@ -17,7 +17,7 @@ pub fn run() {
         .plugin(tauri_plugin_shell::init())
         .setup(|app| {
             // --- Start your sidecar ---
-            let sidecar_command = app.shell().sidecar("psychotherapie-seliger").unwrap();
+            let sidecar_command = app.shell().sidecar("mosaik").unwrap();
 
             let (mut rx, sidecar_child) = sidecar_command.spawn().expect("Failed to spawn sidecar");
             let child = Arc::new(Mutex::new(Some(sidecar_child)));

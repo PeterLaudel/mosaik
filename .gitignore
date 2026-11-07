@@ -48,11 +48,11 @@ node_modules/
 /blob-report/
 /playwright/.cache/
 
-psychotherapie-seliger
+mosaik
 server.js
 /migrations/**/*.js
 /tasks/**/*.js
 /seeds/**/*.js
 /src/**/*.js
 
-/src-tauri/binary/psychotherapie-seliger-*
+/src-tauri/binary/mosaik-*

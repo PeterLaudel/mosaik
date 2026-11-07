@@ -15,4 +15,4 @@ npx tsc --project tsconfig.pkg.json --outDir "${STANDALONE}"
 
 # pkg snapshots assets; standalone tree is far smaller than full .next/**/*
 NODE_OPTIONS="${NODE_OPTIONS:+${NODE_OPTIONS} }--max-old-space-size=12288" \
-  npx pkg "${STANDALONE}/server.js" --config pkg.json --output src-tauri/binary/psychotherapie-seliger-aarch64-apple-darwin
+  npx pkg "${STANDALONE}/server.js" --config pkg.json --output src-tauri/binary/mosaik-aarch64-apple-darwin

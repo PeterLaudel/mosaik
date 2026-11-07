@@ -1,5 +1,5 @@
 ---
-"psychotherapie-seliger": minor
+"mosaik": minor
 ---
 
 Add session documentation

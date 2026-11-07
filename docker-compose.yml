@@ -3,7 +3,7 @@ services:
     build:
       context: .
       target: builder
-    image: "${IMAGE:-psychotherapie-seliger:dev}"
+    image: "${IMAGE:-mosaik:dev}"
     depends_on:
       postgres:
         condition: service_healthy
@@ -40,7 +40,7 @@ services:
     build:
       context: .
       target: builder
-    image: "${IMAGE:-psychotherapie-seliger:dev}"
+    image: "${IMAGE:-mosaik:dev}"
     command: npx tsx src/worker.ts
     depends_on:
       postgres:

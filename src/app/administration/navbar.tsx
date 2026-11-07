@@ -19,7 +19,7 @@ export default function Navbar() {
   return (
     <nav className="bg-white">
       <div className="grid [grid-template-areas:'logo_button_menu''items_items_items'] md:[grid-template-areas:'logo_items_button'] items-center justify-between mx-auto px-2 py-2 md:px-8 md:py-4">
-        <Link href="/home" className="[grid-area:logo]">
+        <Link href="/administration/patients" className="[grid-area:logo]">
           <Image
             src="/logo.svg"
             alt="Logo von Psychotherapie Seliger"

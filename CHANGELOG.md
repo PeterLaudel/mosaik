@@ -1,4 +1,4 @@
-# psychotherapie-seliger
+# mosaik
 
 ## 0.5.1
 
