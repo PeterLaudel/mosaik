@@ -1,4 +1,4 @@
-import { getPatientsRepository } from "@/server";
+import { getPatientsRepository } from "@/features/patients";
 import PatientForm from "../../_forms/patientForm";
 import { updatePatient } from "../action";
 

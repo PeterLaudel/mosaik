@@ -1,4 +1,4 @@
-import { getSessionsRepository } from "@/server";
+import { getSessionsRepository } from "@/features/sessions";
 import { NextRequest, NextResponse } from "next/server";
 
 export const GET = async (req: NextRequest) => {

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { factorArray } from "@/models/service";
+import { factorArray } from "@/features/services/model";
 
 export const serviceSchema = z.object({
   short: z.string().min(1, "Kürzel ist erforderlich"),

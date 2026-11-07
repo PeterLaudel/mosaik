@@ -1,4 +1,4 @@
-import { getSessionsRepository } from "@/server";
+import { getSessionsRepository } from "@/features/sessions";
 import PatientSessionsList from "../../sessions/patientSessionsList";
 
 interface Props {

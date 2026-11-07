@@ -1,12 +1,12 @@
 "use client";
 
 import Section from "@/components/section";
-import { Service, factorArray } from "@/models/service";
+import { Service, factorArray } from "@/features/services/model";
 import { Button, NoSsr, Tooltip } from "@mui/material";
 import { DataGrid, GridColDef, GridPaginationModel } from "@mui/x-data-grid";
 import { useRouter } from "next/navigation";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import { fetchServices, servicesQueryKey } from "@/queries/services";
+import { fetchServices, servicesQueryKey } from "@/features/services/queries";
 import { useState } from "react";
 
 const columns: GridColDef[] = [

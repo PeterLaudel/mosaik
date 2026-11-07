@@ -1,4 +1,4 @@
-import { getTherapeutsRepository } from "@/server";
+import { getTherapeutsRepository } from "@/features/therapeuts";
 import { TherapeutForm } from "./therapeutForm";
 import { createTherapeut, updateTherapeut } from "./action";
 

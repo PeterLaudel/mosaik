@@ -1,4 +1,4 @@
-import { getInvoicesRepository } from "@/server";
+import { getInvoicesRepository } from "@/features/invoices";
 import { NextRequest } from "next/server";
 
 export async function GET(

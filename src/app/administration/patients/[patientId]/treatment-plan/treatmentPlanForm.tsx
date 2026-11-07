@@ -21,7 +21,7 @@ import {
   TherapyForm,
   TreatmentPhase,
   GoalStatus,
-} from "@/models/treatmentPlan";
+} from "@/features/treatment-plans/model";
 
 export type PlanFormValues = {
   startDate: string;

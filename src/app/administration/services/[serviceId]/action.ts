@@ -1,7 +1,7 @@
 "use server";
 
-import { ServiceCreate } from "@/repositories/servicesRepository";
-import { getServicesService } from "@/services";
+import { ServiceCreate } from "@/features/services/repository";
+import { getServicesService } from "@/features/services";
 import { revalidatePath } from "next/cache";
 
 export async function updateService(id: number, data: ServiceCreate): Promise<void> {

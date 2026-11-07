@@ -1,4 +1,5 @@
-import { getSessionsRepository, getTreatmentPlansRepository } from "@/server";
+import { getSessionsRepository } from "@/features/sessions";
+import { getTreatmentPlansRepository } from "@/features/treatment-plans";
 import SessionFormShell from "../_forms/sessionFormShell";
 
 interface Props {

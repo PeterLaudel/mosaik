@@ -3,8 +3,8 @@ import {
   HydrationBoundary,
   QueryClient,
 } from "@tanstack/react-query";
-import { getServicesRepository } from "@/server";
-import { servicesQueryKey } from "@/queries/services";
+import { getServicesRepository } from "@/features/services";
+import { servicesQueryKey } from "@/features/services/queries";
 import ServiceList from "./servicesList";
 
 export default async function Page() {

@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { CreatePdfParams, generateInvoiceBlob } from "@/invoicePdf";
+import { CreatePdfParams, generateInvoiceBlob } from "@/features/invoices/pdf";
 
 export async function POST(request: NextRequest) {
   const data = (await request.json()) as CreatePdfParams;

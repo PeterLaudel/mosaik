@@ -123,9 +123,9 @@ GET endpoints that return data (used by server components or external clients) r
 
 ## Server actions only hold Next.js concerns; logic lives in services
 
-A server action is a thin adapter: it gets a service, calls one method, and does the Next.js-specific work (`revalidatePath`, `redirect`, cookies). Everything else (loading entities, defaults, status transitions, mailing, orchestration across repositories) belongs in a service class in `src/services/`.
+A server action is a thin adapter: it gets a service, calls one method, and does the Next.js-specific work (`revalidatePath`, `redirect`, cookies). Everything else (loading entities, defaults, status transitions, mailing, orchestration across repositories) belongs in the feature's service class (`src/features/<feature>/service.ts`).
 
-Services receive their repositories through the constructor, the same way repositories receive `db`, and are obtained in actions through the `get*Service()` helpers exported from `@/services`. Services must not import from `next/*` so they stay usable from the worker, tests and route handlers. Keep the service getters out of the `@/server` barrel: the worker and pseudonymizer import `@/server`, and pulling services in there drags the invoice mailer (`next-auth`, ESM-only `@libpdf/core`) into their module graph.
+Services receive their repositories through the constructor, the same way repositories receive `db`, and are obtained in actions through the `get*Service()` helpers exported from the feature's `index.ts` (e.g. `@/features/invoices`). Services must not import from `next/*` so they stay usable from the worker, tests and route handlers.
 
 ```ts
 // src/app/administration/invoices/(index)/action.ts
@@ -136,7 +136,7 @@ export async function markInvoiceAsPaid(invoiceId: number) {
 }
 ```
 
-Test services directly (`src/services/*.test.ts`) by constructing them with real repositories against the test database.
+Test services directly (`src/features/<feature>/service.test.ts`) by constructing them with real repositories against the test database.
 
 ## API route PATCH handlers must use an explicit field allowlist
 
@@ -233,25 +233,47 @@ The React Compiler eslint plugin flags `methods.watch()` inside a `useEffect` as
 const subscription = methods.watch(() => { ... });
 ```
 
-## Models must embed parent entities, not foreign key IDs
+## Code is organized by feature
 
-A model interface must include the full parent entity object, not a raw foreign key integer. The repository is responsible for the join.
+Everything a feature needs on the server lives in its own folder under `src/features/`:
+
+```
+src/features/invoices/
+  model.ts          types this feature owns (Invoice, InvoicePatient, ...)
+  repository.ts     reads/writes, incl. this feature's selectors
+  service.ts        business logic used by server actions and routes
+  queries.ts        client-side fetch helpers for this feature's API routes
+  index.ts          get*Repository() / get*Service() (server only)
+  *.test.ts         tests next to the code they cover
+src/shared/         infrastructure used by several features (outbox, ollama)
+src/app/            routes, pages, server actions and UI components
+```
+
+`src/app` is where features are composed: a page may read from several features. `index.ts` pulls in the database, so client components import only `model.ts` or `queries.ts`, never the feature's `index.ts`.
+
+## Features share data, not code
+
+A feature never imports another feature (enforced by `no-restricted-imports` in `eslint.config.js`), and `src/shared` never imports a feature. When a feature needs data that another feature manages, it defines its own type with just the fields it reads and its repository reads them straight from the shared tables:
 
 ```ts
-// correct
-export interface Session {
-  patient: Patient;
-  // ...
+// src/features/invoices/model.ts
+export interface InvoicePatient {
+  id: number;
+  name: string;
+  surname: string;
+  birthdate: string;
+  diagnosis: string | null;
+  billingInfo: InvoiceBillingInfo;
+  invoicePassword: string | null;
 }
 
-// wrong
-export interface Session {
-  patientId: number;
+export interface Invoice {
+  patient: InvoicePatient; // not the patients feature's Patient
   // ...
 }
 ```
 
-This ensures callers always have access to the full entity graph without a second lookup, and keeps the model layer decoupled from database column names.
+The repository still does the join, so a model embeds its parent instead of a bare foreign key. But the embedded object is the feature's own projection (`InvoicePatient`, `SessionPatient`, `TreatmentPlanPatient`), not another feature's model. Lookups a feature needs for its own UI (e.g. the patients and services an invoice can be written for) are methods on that feature's repository (`InvoicesRepository.findPatients()`), not calls into the other feature. Duplicating a few columns in a selector is the intended cost of keeping features independent.
 
 ## One-to-many child collections are saved atomically with their parent
 

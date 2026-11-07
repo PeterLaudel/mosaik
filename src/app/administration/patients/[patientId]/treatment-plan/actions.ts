@@ -1,8 +1,8 @@
 "use server";
 
-import { getTreatmentPlansService } from "@/services";
-import { TreatmentPlan } from "@/models/treatmentPlan";
-import { TreatmentPlanFormData } from "@/services/treatmentPlansService";
+import { getTreatmentPlansService } from "@/features/treatment-plans";
+import { TreatmentPlan } from "@/features/treatment-plans/model";
+import { TreatmentPlanFormData } from "@/features/treatment-plans/service";
 
 export async function createTreatmentPlan(
   patientId: number,

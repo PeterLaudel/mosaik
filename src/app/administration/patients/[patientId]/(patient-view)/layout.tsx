@@ -1,4 +1,4 @@
-import { getPatientsRepository } from "@/server";
+import { getPatientsRepository } from "@/features/patients";
 import PatientTabs from "../patientTabs";
 
 interface Props {

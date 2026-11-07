@@ -1,6 +1,6 @@
 import { Factory } from "fishery";
 import { getDb } from "@/initialize";
-import type { Service } from "@/models/service";
+import type { Service } from "@/features/services/model";
 
 export const serviceFactory = Factory.define<
   Omit<Service, "id">,

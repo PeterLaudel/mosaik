@@ -3,8 +3,8 @@ import {
   HydrationBoundary,
   QueryClient,
 } from "@tanstack/react-query";
-import { getPatientsRepository } from "@/server";
-import { patientsQueryKey } from "@/queries/patients";
+import { getPatientsRepository } from "@/features/patients";
+import { patientsQueryKey } from "@/features/patients/queries";
 import PatientsList from "./patientsList";
 
 export default async function Page({

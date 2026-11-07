@@ -6,8 +6,8 @@ import { Button, Chip, NoSsr } from "@mui/material";
 import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import Section from "@/components/section";
-import { Session } from "@/models/session";
-import { sessionsQueryKey, fetchSessions } from "@/queries/sessions";
+import { Session } from "@/features/sessions/model";
+import { sessionsQueryKey, fetchSessions } from "@/features/sessions/queries";
 import { createSession } from "./actions";
 
 const riskColors: Record<string, "default" | "warning" | "error" | "success"> = {

@@ -5,7 +5,7 @@ import { DataGrid, GridColDef, GridRowSelectionModel } from "@mui/x-data-grid";
 import { Button, Chip, MenuItem, NoSsr, Select } from "@mui/material";
 import Section from "@/components/section";
 import { useSnackbar } from "@/contexts/snackbarProvider";
-import { Session } from "@/models/session";
+import { Session } from "@/features/sessions/model";
 import PseudonymizationModal from "./pseudonymizationModal";
 
 const REPORT_TYPES = ["Verlaufsbericht", "Konsiliarbericht"] as const;

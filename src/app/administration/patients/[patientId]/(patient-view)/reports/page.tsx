@@ -1,4 +1,4 @@
-import { getSessionsRepository } from "@/server";
+import { getSessionsRepository } from "@/features/sessions";
 import ReportsTab from "./reportsTab";
 
 interface Props {

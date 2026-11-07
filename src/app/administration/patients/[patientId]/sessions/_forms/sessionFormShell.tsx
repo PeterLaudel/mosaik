@@ -2,9 +2,9 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useForm, FormProvider } from "react-hook-form";
-import { Session } from "@/models/session";
-import { HomeworkStatus } from "@/models/homework";
-import { TreatmentPlan } from "@/models/treatmentPlan";
+import { Session } from "@/features/sessions/model";
+import { HomeworkStatus } from "@/features/sessions/homework";
+import { TreatmentPlan } from "@/features/treatment-plans/model";
 import { updateSession } from "../actions";
 import SessionForm from "./sessionForm";
 

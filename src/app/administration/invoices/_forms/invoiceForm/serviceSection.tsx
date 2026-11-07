@@ -11,20 +11,20 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import dayjs from "dayjs";
 import { Fragment } from "react";
 import { Controller, useFieldArray, useFormContext, useWatch } from "react-hook-form";
-import { Factor, Service } from "@/models/service";
+import { BillableService, Factor } from "@/features/invoices/model";
 import Section from "@/components/section";
 import type { FormInvoice } from ".";
 
 export interface InvoicePosition {
   serviceDate?: string;
-  service?: Service;
+  service?: BillableService;
   amount: number;
   factor?: Factor;
   price?: number;
 }
 
 interface Props {
-  services: Service[];
+  services: BillableService[];
 }
 
 export default function ServiceSection({ services }: Props) {
@@ -69,7 +69,7 @@ export default function ServiceSection({ services }: Props) {
 
 interface ServiceRowProps {
   index: number;
-  services: Service[];
+  services: BillableService[];
   onRemove: () => void;
   isLast: boolean;
   onAdd: () => void;

@@ -3,6 +3,30 @@ const js = require("@eslint/js");
 const globals = require("globals");
 const tseslint = require("typescript-eslint");
 const nextCoreWebVitals = require("eslint-config-next/core-web-vitals");
+const fs = require("fs");
+const path = require("path");
+
+// Features share data (the database), not code: a feature may not import another feature.
+// The app layer (pages, actions, routes) is where features are composed.
+const features = fs
+    .readdirSync(path.join(__dirname, "src/features"), { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => entry.name);
+
+const featureBoundaries = features.map((feature) => {
+    const others = features.filter((other) => other !== feature).join("|");
+    return {
+        files: [`src/features/${feature}/**/*.{ts,tsx}`],
+        rules: {
+            "no-restricted-imports": ["error", {
+                patterns: [{
+                    regex: `^(@/features/|(\\.\\./)+)(${others})(/|$)`,
+                    message: "Features must not import other features. Read the data you need through this feature's own repository instead.",
+                }],
+            }],
+        },
+    };
+});
 
 module.exports = defineConfig([
     js.configs.recommended,
@@ -25,6 +49,15 @@ module.exports = defineConfig([
     },
     ...nextCoreWebVitals,
     globalIgnores(["**/*.d.ts", "playwright-report/**", ".next/**", "**/*.js"]),
+    ...featureBoundaries,
+    {
+        files: ["src/shared/**/*.{ts,tsx}"],
+        rules: {
+            "no-restricted-imports": ["error", {
+                patterns: [{ regex: "^@/features(/|$)", message: "Shared code must not depend on features." }],
+            }],
+        },
+    },
     ...tseslint.config(
         ...tseslint.configs.recommendedTypeChecked,
         {

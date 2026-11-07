@@ -4,8 +4,8 @@ import {
   QueryClient,
 } from "@tanstack/react-query";
 import { InvoicesList } from "./invoicesList";
-import { getInvoicesRepository } from "@/server";
-import { InvoicesQueryKey, invoicesQueryKey } from "@/queries/invoices";
+import { getInvoicesRepository } from "@/features/invoices";
+import { InvoicesQueryKey, invoicesQueryKey } from "@/features/invoices/queries";
 
 export default async function Page({
   searchParams,

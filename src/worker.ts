@@ -1,6 +1,6 @@
 import { getDb } from "@/initialize";
-import { OutboxRepository, OutboxEvent } from "@/repositories/outboxRepository";
-import { pseudonymizeSession } from "@/server/pseudonymizer";
+import { OutboxRepository, OutboxEvent } from "@/shared/outbox/repository";
+import { pseudonymizeSession } from "@/features/sessions/pseudonymization/pseudonymizer";
 
 const POLL_INTERVAL_MS = 2000;
 

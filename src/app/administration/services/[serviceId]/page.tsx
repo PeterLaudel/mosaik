@@ -1,4 +1,4 @@
-import { getServicesRepository } from "@/server";
+import { getServicesRepository } from "@/features/services";
 import ServiceForm from "../_forms/serviceForm";
 import { updateService } from "./action";
 

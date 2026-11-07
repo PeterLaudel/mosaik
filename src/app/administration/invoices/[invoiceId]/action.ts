@@ -1,7 +1,7 @@
 "use server";
 
-import { InvoiceCreate } from "@/repositories/invoicesRepository";
-import { getInvoicesService } from "@/services";
+import { InvoiceCreate } from "@/features/invoices/repository";
+import { getInvoicesService } from "@/features/invoices";
 import { revalidatePath } from "next/cache";
 
 export async function updateInvoice(id: number, invoice: InvoiceCreate) {

@@ -1,6 +1,6 @@
 import { Factory } from "fishery";
 import { getDb } from "@/initialize";
-import type { Therapeut } from "@/models/therapeut";
+import type { Therapeut } from "@/features/therapeuts/model";
 import { faker } from "@faker-js/faker";
 
 export const therapeutFactory = Factory.define<

@@ -24,9 +24,9 @@ import {
   RISK_LEVELS,
   INTERVENTIONS,
   RiskLevel,
-} from "@/models/session";
-import { HOMEWORK_STATUSES, HomeworkStatus } from "@/models/homework";
-import { TreatmentPlan, GOAL_STATUSES } from "@/models/treatmentPlan";
+} from "@/features/sessions/model";
+import { HOMEWORK_STATUSES, HomeworkStatus } from "@/features/sessions/homework";
+import { TreatmentPlan, GOAL_STATUSES } from "@/features/treatment-plans/model";
 import { SessionFormValues } from "./sessionFormShell";
 
 interface Props {

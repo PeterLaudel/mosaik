@@ -1,6 +1,6 @@
 "use server";
 
-import { getInvoicesService } from "@/services";
+import { getInvoicesService } from "@/features/invoices";
 import { revalidatePath } from "next/cache";
 
 export async function sendInvoiceEmail(invoiceId: number) {

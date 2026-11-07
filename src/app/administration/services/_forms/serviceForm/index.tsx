@@ -3,8 +3,8 @@
 import Section from "@/components/section";
 import SubmitButton from "@/components/submitButton";
 import { useSnackbar } from "@/contexts/snackbarProvider";
-import { Service, factorArray } from "@/models/service";
-import { ServiceCreate } from "@/repositories/servicesRepository";
+import { Service, factorArray } from "@/features/services/model";
+import { ServiceCreate } from "@/features/services/repository";
 import { TextField } from "@mui/material";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";

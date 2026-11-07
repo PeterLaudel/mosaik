@@ -1,9 +1,4 @@
-import {
-  getInvoicesRepository,
-  getPatientsRepository,
-  getServicesRepository,
-  getTherapeutsRepository,
-} from "@/server";
+import { getInvoicesRepository } from "@/features/invoices";
 import { InvoiceViewer } from "./invoiceViewer";
 import InvoiceForm from "../_forms/invoiceForm";
 import { updateInvoice } from "./action";
@@ -15,27 +10,23 @@ type Props = {
 };
 
 export default async function Page({ params }: Props) {
-  const therapeutsRepository = await getTherapeutsRepository();
-  const therapeuts = await therapeutsRepository.all();
-  const therapeut = therapeuts[0];
+  const invoiceRepository = await getInvoicesRepository();
+  const therapeut = await invoiceRepository.findIssuer();
   if (!therapeut) {
     return <div>Bitte legen Sie zuerst den Therapeut vollständig an!</div>;
   }
 
   const { invoiceId } = await params;
-  const invoiceRepository = await getInvoicesRepository();
   const invoice = await invoiceRepository.find(invoiceId);
 
   if (invoice.status !== "pending") {
     return <InvoiceViewer invoice={invoice} />;
   }
 
-  const patientRepository = await getPatientsRepository();
-  const patients = await patientRepository.all();
-
-  const servicesRepository = await getServicesRepository();
-  const services = await servicesRepository.all();
-
+  const [patients, services] = await Promise.all([
+    invoiceRepository.findPatients(),
+    invoiceRepository.findBillableServices(),
+  ]);
 
   return (
     <InvoiceForm
