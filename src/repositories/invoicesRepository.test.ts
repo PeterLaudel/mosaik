@@ -17,12 +17,12 @@ describe("InvoicesRepository", () => {
     invoicesRepository = new InvoicesRepository(db);
   });
 
-  describe("#save", () => {
+  describe("#create", () => {
     it("creates a new invoice", async () => {
       const patient = await patientFactory.create();
       const service = await serviceFactory.create();
 
-      const createdInvoice = await invoicesRepository.save({
+      const createdInvoice = await invoicesRepository.create({
         patient,
         invoiceAmount: 200,
         invoiceNumber: "200212433",
@@ -58,6 +58,9 @@ describe("InvoicesRepository", () => {
       });
     });
 
+  });
+
+  describe("#update", () => {
     it("updates an existing invoice", async () => {
       const patient = await patientFactory.create();
       const invoice = await invoiceFactory.create();
@@ -72,7 +75,7 @@ describe("InvoicesRepository", () => {
         serviceId: service.id,
       });
 
-      const updatedInvoice = await invoicesRepository.save({
+      const updatedInvoice = await invoicesRepository.update({
         id: invoice.id,
         patient,
         base64Pdf: "data:application/pdf;base64,updated-example",
@@ -120,7 +123,6 @@ describe("InvoicesRepository", () => {
     });
 
     const itif = (condition: boolean) => condition ? it : it.skip;
-
 
     itif(databaseDialect() === "sqlite")("generates a unique invoice number", async () => {
       const db = getDb();

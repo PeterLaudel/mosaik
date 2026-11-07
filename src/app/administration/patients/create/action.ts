@@ -1,14 +1,12 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { Patient } from "@/models/patient";
+import { PatientCreate } from "@/repositories/patientsRepository";
 import { getPatientsService } from "@/services";
 
-export default async function createPatient(
-  createPatient: Omit<Patient, "id">
-) {
+export default async function createPatient(patient: PatientCreate) {
   const patientsService = await getPatientsService();
-  await patientsService.save(createPatient);
+  await patientsService.create(patient);
 
   revalidatePath("/administration/patients");
 }

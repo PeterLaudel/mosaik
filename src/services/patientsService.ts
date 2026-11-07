@@ -1,10 +1,18 @@
 import { Patient } from "@/models/patient";
-import { PatientSave, PatientsRepository } from "@/repositories/patientsRepository";
+import {
+  PatientCreate,
+  PatientsRepository,
+  PatientUpdate,
+} from "@/repositories/patientsRepository";
 
 export class PatientsService {
   constructor(private readonly patientsRepository: PatientsRepository) {}
 
-  async save(patient: PatientSave): Promise<Patient> {
-    return this.patientsRepository.save(patient);
+  async create(patient: PatientCreate): Promise<Patient> {
+    return this.patientsRepository.create(patient);
+  }
+
+  async update(patient: PatientUpdate): Promise<Patient> {
+    return this.patientsRepository.update(patient);
   }
 }

@@ -5,10 +5,10 @@ import { sessionSelector } from "./selectors/session";
 import { Patient } from "@/models/patient";
 import { OutboxRepository } from "./outboxRepository";
 
-export type SessionSave = Omit<Session, "id" | "createdAt" | "interventions"> & {
-  id?: number;
+export type SessionCreate = Omit<Session, "id" | "createdAt" | "interventions"> & {
   interventions: string[];
 };
+export type SessionUpdate = SessionCreate & { id: number };
 
 export class SessionsRepository {
   constructor(private readonly database: Database) {}
@@ -93,51 +93,66 @@ export class SessionsRepository {
     return (result?.max ?? 0) + 1;
   }
 
-  async save(session: SessionSave): Promise<Session> {
-    const { id: originId, interventions, patient, givenHomework, reviewHomework, ...rest } = session;
-    const data = { ...rest, interventions: JSON.stringify(interventions), patientId: patient.id };
+  async create(session: SessionCreate): Promise<Session> {
+    const { givenHomework, reviewHomework } = session;
+    const data = this.toRow(session);
+    const isFinal = data.status === "final";
 
     const id = await this.database.transaction().execute(async (trx) => {
-      const previousStatus = originId
-        ? (
-            await trx
-              .selectFrom("sessions")
-              .select("status")
-              .where("sessions.id", "=", originId)
-              .executeTakeFirst()
-          )?.status
-        : null;
-      const isFinalizing = data.status === "final" && previousStatus !== "final";
+      const { id: createdId } = await trx
+        .insertInto("sessions")
+        .values(isFinal ? { ...data, pseudonymizationStatus: "pending" } : data)
+        .returning(["id"])
+        .executeTakeFirstOrThrow();
 
-      const { id: savedId } = originId
-        ? await trx
-            .updateTable("sessions")
-            .set(isFinalizing ? { ...data, pseudonymizationStatus: "pending" } : data)
-            .returning(["id"])
-            .where("sessions.id", "=", originId)
-            .executeTakeFirstOrThrow()
-        : await trx
-            .insertInto("sessions")
-            .values(data)
-            .returning(["id"])
-            .executeTakeFirstOrThrow();
+      await this.replaceHomework(createdId, givenHomework, reviewHomework, trx);
+      if (isFinal) await this.enqueueFinalized(createdId, trx);
 
-      await this.upsertHomework(savedId, givenHomework, reviewHomework, trx);
-
-      if (isFinalizing) {
-        await new OutboxRepository(trx).enqueue({
-          eventType: "session.finalized",
-          payload: { sessionId: savedId },
-        });
-      }
-
-      return savedId;
+      return createdId;
     });
 
     return this.find(id);
   }
 
-  private async upsertHomework(
+  async update(session: SessionUpdate): Promise<Session> {
+    const { id, givenHomework, reviewHomework } = session;
+    const data = this.toRow(session);
+
+    await this.database.transaction().execute(async (trx) => {
+      const { status: previousStatus } = await trx
+        .selectFrom("sessions")
+        .select("status")
+        .where("sessions.id", "=", id)
+        .executeTakeFirstOrThrow();
+      const isFinalizing = data.status === "final" && previousStatus !== "final";
+
+      await trx
+        .updateTable("sessions")
+        .set(isFinalizing ? { ...data, pseudonymizationStatus: "pending" } : data)
+        .where("sessions.id", "=", id)
+        .executeTakeFirstOrThrow();
+
+      await this.replaceHomework(id, givenHomework, reviewHomework, trx);
+      if (isFinalizing) await this.enqueueFinalized(id, trx);
+    });
+
+    return this.find(id);
+  }
+
+  private toRow(session: SessionCreate) {
+    // Homework is stored in its own table (see replaceHomework), so it is split off here.
+    const { interventions, patient, givenHomework, reviewHomework, ...columns } = session;
+    return { ...columns, interventions: JSON.stringify(interventions), patientId: patient.id };
+  }
+
+  private async enqueueFinalized(sessionId: number, trx: Database) {
+    await new OutboxRepository(trx).enqueue({
+      eventType: "session.finalized",
+      payload: { sessionId },
+    });
+  }
+
+  private async replaceHomework(
     sessionId: number,
     givenHomework: GivenHomework[],
     reviewHomework: ReviewHomework[],

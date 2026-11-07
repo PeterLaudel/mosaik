@@ -2,7 +2,6 @@ import { z } from "zod";
 import { factorArray } from "@/models/service";
 
 export const serviceSchema = z.object({
-  id: z.number().optional(),
   short: z.string().min(1, "Kürzel ist erforderlich"),
   originalGopNr: z.string().min(1, "GOP-Nr ist erforderlich"),
   description: z.string().min(1, "Beschreibung ist erforderlich"),

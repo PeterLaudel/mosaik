@@ -36,12 +36,12 @@ describe("ServicesRepository", () => {
     });
   });
 
-  describe("#save", () => {
-    it("creates a service when no id is provided", async () => {
+  describe("#create", () => {
+    it("creates a service", async () => {
       const database = getDb();
       const service = serviceFactory.build();
 
-      const result = await servicesRepository.save(service);
+      const result = await servicesRepository.create(service);
 
       const allServices = await database
         .selectFrom("services")
@@ -51,10 +51,13 @@ describe("ServicesRepository", () => {
       expect(result).toEqual({ ...service, id: expect.any(Number) });
     });
 
-    it("updates a service when id is provided", async () => {
+  });
+
+  describe("#update", () => {
+    it("updates an existing service", async () => {
       const service = await serviceFactory.create();
 
-      const result = await servicesRepository.save({
+      const result = await servicesRepository.update({
         ...service,
         description: "New Description",
       });

@@ -18,18 +18,19 @@ export class TreatmentPlansService {
     private readonly treatmentPlansRepository: TreatmentPlansRepository,
   ) {}
 
-  async save(
-    patientId: number,
-    data: TreatmentPlanFormData,
-    existingId?: number,
-  ): Promise<TreatmentPlan> {
+  async create(patientId: number, data: TreatmentPlanFormData): Promise<TreatmentPlan> {
     const patient = await this.patientsRepository.find(patientId);
 
-    return this.treatmentPlansRepository.save({
-      id: existingId,
+    return this.treatmentPlansRepository.create({
       patient,
       therapeutId: null,
       ...data,
     });
+  }
+
+  async update(id: number, data: TreatmentPlanFormData): Promise<TreatmentPlan> {
+    const existing = await this.treatmentPlansRepository.find(id);
+
+    return this.treatmentPlansRepository.update({ ...existing, ...data, id });
   }
 }

@@ -90,11 +90,11 @@ describe("TreatmentPlansRepository", () => {
     });
   });
 
-  describe("#save", () => {
+  describe("#create", () => {
     it("creates a new plan with goals in a single call", async () => {
       const patient = await patientFactory.create();
 
-      const plan = await repo.save({
+      const plan = await repo.create({
         patient,
         therapeutId: null,
         startDate: "2024-01-01",
@@ -116,9 +116,30 @@ describe("TreatmentPlansRepository", () => {
       });
     });
 
+    it("creates a plan with no goals", async () => {
+      const patient = await patientFactory.create();
+
+      const plan = await repo.create({
+        patient,
+        therapeutId: null,
+        startDate: "2024-01-01",
+        endDate: null,
+        therapyForm: "Einzeltherapie",
+        phase: "Diagnostik",
+        approvedSessions: null,
+        notes: null,
+        goals: [],
+      });
+
+      expect(plan.goals).toEqual([]);
+    });
+
+  });
+
+  describe("#update", () => {
     it("updates an existing plan and replaces goals atomically", async () => {
       const patient = await patientFactory.create();
-      const existing = await repo.save({
+      const existing = await repo.create({
         patient,
         therapeutId: null,
         startDate: "2024-01-01",
@@ -130,7 +151,7 @@ describe("TreatmentPlansRepository", () => {
         goals: [{ description: "Alter Fokus", status: "active", priority: 1 }],
       });
 
-      const updated = await repo.save({
+      const updated = await repo.update({
         id: existing.id,
         patient,
         therapeutId: null,
@@ -159,27 +180,9 @@ describe("TreatmentPlansRepository", () => {
       expect(goalRows.map((r) => r.description)).toEqual(["Neuer Fokus"]);
     });
 
-    it("saves a plan with no goals", async () => {
+    it("clears all goals when updated with an empty array", async () => {
       const patient = await patientFactory.create();
-
-      const plan = await repo.save({
-        patient,
-        therapeutId: null,
-        startDate: "2024-01-01",
-        endDate: null,
-        therapyForm: "Einzeltherapie",
-        phase: "Diagnostik",
-        approvedSessions: null,
-        notes: null,
-        goals: [],
-      });
-
-      expect(plan.goals).toEqual([]);
-    });
-
-    it("clears all goals when saved with an empty array", async () => {
-      const patient = await patientFactory.create();
-      const existing = await repo.save({
+      const existing = await repo.create({
         patient,
         therapeutId: null,
         startDate: "2024-01-01",
@@ -191,7 +194,7 @@ describe("TreatmentPlansRepository", () => {
         goals: [{ description: "Ziel", status: "active", priority: 1 }],
       });
 
-      const cleared = await repo.save({ ...existing, goals: [] });
+      const cleared = await repo.update({ ...existing, goals: [] });
 
       expect(cleared.goals).toEqual([]);
       const rows = await getDb()

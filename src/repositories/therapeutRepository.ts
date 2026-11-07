@@ -1,7 +1,8 @@
 import { type Database } from "@/initialize";
 import { Therapeut } from "@/models/therapeut";
 
-export type TherapeutSave = Omit<Therapeut, "id"> & { id?: number };
+export type TherapeutCreate = Omit<Therapeut, "id">;
+export type TherapeutUpdate = TherapeutCreate & { id: number };
 
 export class TherapeutRepository {
   constructor(private readonly database: Database) {}
@@ -10,20 +11,20 @@ export class TherapeutRepository {
     return await this.database.selectFrom("therapeuts").selectAll().execute();
   }
 
-  public async save(therapeut: TherapeutSave): Promise<Therapeut> {
-    if (therapeut.id) {
-      return await this.database
-        .updateTable("therapeuts")
-        .set({
-          ...therapeut,
-        })
-        .where("id", "=", therapeut.id)
-        .returningAll()
-        .executeTakeFirstOrThrow();
-    }
+  public async create(therapeut: TherapeutCreate): Promise<Therapeut> {
     return await this.database
       .insertInto("therapeuts")
       .values(therapeut)
+      .returningAll()
+      .executeTakeFirstOrThrow();
+  }
+
+  public async update(therapeut: TherapeutUpdate): Promise<Therapeut> {
+    const { id, ...data } = therapeut;
+    return await this.database
+      .updateTable("therapeuts")
+      .set(data)
+      .where("id", "=", id)
       .returningAll()
       .executeTakeFirstOrThrow();
   }

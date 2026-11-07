@@ -2,7 +2,8 @@ import { type Database } from "@/initialize";
 import { Amount, Service } from "@/models/service";
 import { serviceSelector } from "./selectors/service";
 
-export type ServiceSave = Omit<Service, "id"> & { id?: number };
+export type ServiceCreate = Omit<Service, "id">;
+export type ServiceUpdate = ServiceCreate & { id: number };
 
 export default class ServicesRepository {
   constructor(private readonly database: Database) {}
@@ -32,36 +33,40 @@ export default class ServicesRepository {
       .executeTakeFirstOrThrow();
   }
 
-  public async save(service: ServiceSave): Promise<Service> {
+  public async create(service: ServiceCreate): Promise<Service> {
     return await this.database.transaction().execute(async (trx) => {
-      const { id } = await this.upsertService(service, trx);
-      await this.upsertAmounts(id, service.amounts, trx);
-      return serviceSelector(trx)
-        .where("id", "=", id)
-        .$castTo<Service>()
+      const { amounts, ...data } = service;
+      const { id } = await trx
+        .insertInto("services")
+        .values(data)
+        .returning(["id"])
         .executeTakeFirstOrThrow();
+      await this.replaceAmounts(id, amounts, trx);
+      return this.findIn(trx, id);
     });
   }
 
-  private async upsertService(service: ServiceSave, database = this.database) {
-    const { id, amounts, ...rest } = service;
-    if (id) {
-      return await database
+  public async update(service: ServiceUpdate): Promise<Service> {
+    return await this.database.transaction().execute(async (trx) => {
+      const { id, amounts, ...data } = service;
+      await trx
         .updateTable("services")
-        .set(rest)
+        .set(data)
         .where("id", "=", id)
-        .returningAll()
         .executeTakeFirstOrThrow();
-    }
+      await this.replaceAmounts(id, amounts, trx);
+      return this.findIn(trx, id);
+    });
+  }
 
-    return await database
-      .insertInto("services")
-      .values(rest)
-      .returningAll()
+  private findIn(database: Database, id: number): Promise<Service> {
+    return serviceSelector(database)
+      .where("id", "=", id)
+      .$castTo<Service>()
       .executeTakeFirstOrThrow();
   }
 
-  private async upsertAmounts(
+  private async replaceAmounts(
     serviceId: number,
     amounts: Amount[],
     database = this.database

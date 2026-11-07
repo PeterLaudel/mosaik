@@ -4,7 +4,7 @@ import Section from "@/components/section";
 import SubmitButton from "@/components/submitButton";
 import { useSnackbar } from "@/contexts/snackbarProvider";
 import { Service, factorArray } from "@/models/service";
-import { ServiceSave } from "@/repositories/servicesRepository";
+import { ServiceCreate } from "@/repositories/servicesRepository";
 import { TextField } from "@mui/material";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
@@ -14,7 +14,7 @@ import { ServiceFormData, serviceSchema } from "./schema";
 import PriceInput from "./priceInput";
 
 interface Props {
-  action: (data: ServiceSave) => Promise<void>;
+  action: (data: ServiceCreate) => Promise<void>;
   initialValues?: Service;
 }
 
@@ -33,12 +33,12 @@ export default function ServiceForm({ action, initialValues }: Props) {
   });
 
   const onSubmit = ({ amounts, ...rest }: ServiceFormData) => {
-    const serviceSave = {
+    const service = {
       ...rest,
       amounts: amounts.filter((a): a is { factor: typeof a.factor; price: number } => a.price !== undefined),
     };
     startTransition(async () => {
-      await action(serviceSave);
+      await action(service);
       showSuccessMessage("Leistung gespeichert");
       router.push("/administration/services");
     });
@@ -141,7 +141,6 @@ export default function ServiceForm({ action, initialValues }: Props) {
 
 function determineDefaultValues(initialValues?: Service): ServiceFormData {
   return {
-    id: initialValues?.id,
     short: initialValues?.short ?? "",
     originalGopNr: initialValues?.originalGopNr ?? "",
     description: initialValues?.description ?? "",

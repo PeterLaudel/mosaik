@@ -5,16 +5,38 @@ import { patientSelector } from "./selectors/patient";
 import { Patient } from "@/models/patient";
 import { serviceSelector } from "./selectors/service";
 import { jsonObjectFrom, jsonArrayFrom } from "@/database";
-export type InvoiceSave = Omit<Invoice, "id"> & { id?: number };
+export type InvoiceCreate = Omit<Invoice, "id">;
+export type InvoiceUpdate = InvoiceCreate & { id: number };
 
 export class InvoicesRepository {
   constructor(private readonly database: Database) {}
 
-  public async save(invoice: InvoiceSave): Promise<Invoice> {
+  public async create(invoice: InvoiceCreate): Promise<Invoice> {
     return await this.database.transaction().execute(async (trx) => {
-      const { id } = await this.upsertInvoice(invoice, trx);
-      await this.upsertPatient(id, invoice.patient, trx);
-      await this.upsertPositions(id, invoice.positions, trx);
+      const { id } = await trx
+        .insertInto("invoices")
+        .values(this.toRow(invoice))
+        .returning(["id"])
+        .executeTakeFirstOrThrow();
+      await this.replacePatient(id, invoice.patient, trx);
+      await this.replacePositions(id, invoice.positions, trx);
+
+      return this.modelSelector(trx)
+        .where("invoices.id", "=", id)
+        .executeTakeFirstOrThrow();
+    });
+  }
+
+  public async update(invoice: InvoiceUpdate): Promise<Invoice> {
+    return await this.database.transaction().execute(async (trx) => {
+      const { id } = invoice;
+      await trx
+        .updateTable("invoices")
+        .set(this.toRow(invoice))
+        .where("id", "=", id)
+        .executeTakeFirstOrThrow();
+      await this.replacePatient(id, invoice.patient, trx);
+      await this.replacePositions(id, invoice.positions, trx);
 
       return this.modelSelector(trx)
         .where("invoices.id", "=", id)
@@ -122,32 +144,16 @@ export class InvoicesRepository {
       ]);
   }
 
-  private async upsertInvoice(
-    invoice: InvoiceSave,
-    transaction: Database = this.database,
-  ) {
-    const data = {
+  private toRow(invoice: InvoiceCreate) {
+    return {
       invoiceNumber: invoice.invoiceNumber,
       base64Pdf: invoice.base64Pdf,
       invoiceAmount: invoice.invoiceAmount,
       status: invoice.status,
     };
-    if (invoice.id) {
-      return transaction
-        .updateTable("invoices")
-        .where("id", "=", invoice.id)
-        .set(data)
-        .returningAll()
-        .executeTakeFirstOrThrow();
-    } else {
-      return transaction
-        .insertInto("invoices")
-        .values(data)
-        .returningAll()
-        .executeTakeFirstOrThrow();
-    }
   }
-  private async upsertPatient(
+
+  private async replacePatient(
     invoiceId: number,
     patient: Patient,
     transaction: Database = this.database,
@@ -189,7 +195,7 @@ export class InvoicesRepository {
     );
   }
 
-  private async upsertPositions(
+  private async replacePositions(
     invoiceId: number,
     positions: InvoicePosition[],
     transaction = this.database,

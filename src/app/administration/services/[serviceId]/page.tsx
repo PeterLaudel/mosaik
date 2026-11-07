@@ -12,5 +12,5 @@ export default async function Page(props: Props) {
   const serviceRepository = await getServicesRepository();
   const service = await serviceRepository.find(serviceId);
 
-  return <ServiceForm action={updateService} initialValues={service} />;
+  return <ServiceForm action={updateService.bind(null, service.id)} initialValues={service} />;
 }

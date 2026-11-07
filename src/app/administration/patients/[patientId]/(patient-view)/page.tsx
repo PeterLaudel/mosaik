@@ -15,5 +15,5 @@ export default async function Page(props: Props) {
   const patientRepository = await getPatientsRepository();
   const patient = await patientRepository.find(patientId);
 
-  return <PatientForm action={updatePatient} initialValues={patient} />;
+  return <PatientForm action={updatePatient.bind(null, patient.id)} initialValues={patient} />;
 }

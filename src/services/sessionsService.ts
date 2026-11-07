@@ -1,6 +1,6 @@
 import { Session } from "@/models/session";
 import { PatientsRepository } from "@/repositories/patientsRepository";
-import { SessionSave, SessionsRepository } from "@/repositories/sessionsRepository";
+import { SessionCreate, SessionsRepository } from "@/repositories/sessionsRepository";
 
 export type PseudonymizationCheckResult =
   | { status: "pending" }
@@ -21,7 +21,7 @@ export class SessionsService {
       sessionNumber,
     );
 
-    return this.sessionsRepository.save({
+    return this.sessionsRepository.create({
       patient,
       therapeutId: null,
       sessionDate: new Date().toISOString().slice(0, 10),
@@ -49,9 +49,9 @@ export class SessionsService {
     });
   }
 
-  async update(id: number, data: Partial<SessionSave>): Promise<Session> {
+  async update(id: number, data: Partial<SessionCreate>): Promise<Session> {
     const existing = await this.sessionsRepository.find(id);
-    return this.sessionsRepository.save({ ...existing, ...data });
+    return this.sessionsRepository.update({ ...existing, ...data, id });
   }
 
   async getPseudonymizedText(sessionIds: number[]): Promise<PseudonymizationCheckResult> {

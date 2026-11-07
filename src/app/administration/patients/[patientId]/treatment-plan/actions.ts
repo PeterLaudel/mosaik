@@ -4,11 +4,18 @@ import { getTreatmentPlansService } from "@/services";
 import { TreatmentPlan } from "@/models/treatmentPlan";
 import { TreatmentPlanFormData } from "@/services/treatmentPlansService";
 
-export async function upsertTreatmentPlan(
+export async function createTreatmentPlan(
   patientId: number,
   data: TreatmentPlanFormData,
-  existingId?: number
 ): Promise<TreatmentPlan> {
   const treatmentPlansService = await getTreatmentPlansService();
-  return treatmentPlansService.save(patientId, data, existingId);
+  return treatmentPlansService.create(patientId, data);
+}
+
+export async function updateTreatmentPlan(
+  id: number,
+  data: TreatmentPlanFormData,
+): Promise<TreatmentPlan> {
+  const treatmentPlansService = await getTreatmentPlansService();
+  return treatmentPlansService.update(id, data);
 }

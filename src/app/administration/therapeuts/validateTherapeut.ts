@@ -1,7 +1,6 @@
 import * as z from "zod";
 
 export const therapeutSchema = z.object({
-  id: z.number().optional(),
   title: z.string().min(1, "Titel ist erforderlich"),
   name: z.string().min(1, "Name ist erforderlich"),
   surname: z.string().min(1, "Vorname ist erforderlich"),

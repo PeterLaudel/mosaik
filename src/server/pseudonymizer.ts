@@ -34,14 +34,14 @@ export async function pseudonymizeSession(sessionId: number): Promise<void> {
       pseudonymizeText(session.nextSessionPlan, context),
     ]);
 
-    await sessionsRepository.save({
+    await sessionsRepository.update({
       ...session,
       pseudonymizedNotes,
       pseudonymizedNextPlan,
       pseudonymizationStatus: "done",
     });
   } catch (error) {
-    await sessionsRepository.save({ ...session, pseudonymizationStatus: "failed" });
+    await sessionsRepository.update({ ...session, pseudonymizationStatus: "failed" });
     throw error;
   }
 }

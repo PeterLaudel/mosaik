@@ -1,10 +1,13 @@
 import { getTherapeutsRepository } from "@/server";
 import { TherapeutForm } from "./therapeutForm";
-import { saveTherapeut } from "./action";
+import { createTherapeut, updateTherapeut } from "./action";
 
 export default async function Page() {
     const therapeutRepository = await getTherapeutsRepository();
     const therapeuts = await therapeutRepository.all();
 
-    return <TherapeutForm action={saveTherapeut} therapeut={therapeuts[0]} />
+    const therapeut = therapeuts[0];
+    const action = therapeut ? updateTherapeut.bind(null, therapeut.id) : createTherapeut;
+
+    return <TherapeutForm action={action} therapeut={therapeut} />
 }

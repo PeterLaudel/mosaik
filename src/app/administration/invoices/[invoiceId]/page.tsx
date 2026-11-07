@@ -39,8 +39,7 @@ export default async function Page({ params }: Props) {
 
   return (
     <InvoiceForm
-      action={updateInvoice}
-      invoiceId={invoice.id}
+      action={updateInvoice.bind(null, invoice.id)}
       therapeut={therapeut}
       services={services}
       patients={patients}
