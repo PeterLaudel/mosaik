@@ -121,6 +121,23 @@ POST and PATCH mutations should be `"use server"` functions in an `actions.ts` f
 
 GET endpoints that return data (used by server components or external clients) remain as route handlers in `app/api/`.
 
+## Server actions only hold Next.js concerns; logic lives in services
+
+A server action is a thin adapter: it gets a service, calls one method, and does the Next.js-specific work (`revalidatePath`, `redirect`, cookies). Everything else (loading entities, defaults, status transitions, mailing, orchestration across repositories) belongs in a service class in `src/services/`.
+
+Services receive their repositories through the constructor, the same way repositories receive `db`, and are obtained in actions through the `get*Service()` helpers exported from `@/services`. Services must not import from `next/*` so they stay usable from the worker, tests and route handlers. Keep the service getters out of the `@/server` barrel: the worker and pseudonymizer import `@/server`, and pulling services in there drags the invoice mailer (`next-auth`, ESM-only `@libpdf/core`) into their module graph.
+
+```ts
+// src/app/administration/invoices/(index)/action.ts
+export async function markInvoiceAsPaid(invoiceId: number) {
+  const invoicesService = await getInvoicesService();
+  await invoicesService.updateStatus(invoiceId, "paid");
+  revalidatePath("/administration/invoices");
+}
+```
+
+Test services directly (`src/services/*.test.ts`) by constructing them with real repositories against the test database.
+
 ## API route PATCH handlers must use an explicit field allowlist
 
 Never spread the raw request body into a `save` or `update` call in an API route handler. An `...body` spread lets a client overwrite any column, including `deletedAt`, `status`, or other fields not intended to be user-editable.

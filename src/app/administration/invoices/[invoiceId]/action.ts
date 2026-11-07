@@ -1,12 +1,12 @@
 "use server";
 
 import { InvoiceSave } from "@/repositories/invoicesRepository";
-import { getInvoicesRepository } from "@/server";
+import { getInvoicesService } from "@/services";
 import { revalidatePath } from "next/cache";
 
 export async function updateInvoice(invoice: InvoiceSave) {
-  const invoicesRepository = await getInvoicesRepository();
-  const updatedInvoice = await invoicesRepository.save(invoice);
+  const invoicesService = await getInvoicesService();
+  const updatedInvoice = await invoicesService.save(invoice);
 
   revalidatePath(`/administration/invoices/${invoice.id}`);
 
