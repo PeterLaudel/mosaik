@@ -9,8 +9,8 @@ const nextConfig: NextConfig = {
     return Promise.resolve([
       {
         source: "/",
-        destination: "/home",
-        permanent: true,
+        destination: "/administration/patients",
+        permanent: false,
       },
     ]);
   },

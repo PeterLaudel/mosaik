@@ -9,6 +9,7 @@ import next from "next";
 import * as http from "http";
 import { dbMigrate } from "./tasks/dbMigrate";
 
+// Keeps the pre-rename folder name: installed apps store the patient database and .env here
 const homeDir = path.join(
   process.env.HOME || "",
   "Library",

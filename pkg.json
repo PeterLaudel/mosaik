@@ -1,5 +1,5 @@
 {
-  "name": "psychotherapie-seliger",
+  "name": "mosaik",
   "version": "0.1.0",
   "private": true,
   "bin": ".next/standalone/server.js",
