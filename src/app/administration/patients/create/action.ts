@@ -2,13 +2,13 @@
 
 import { revalidatePath } from "next/cache";
 import { Patient } from "@/models/patient";
-import { getPatientsRepository } from "@/server";
+import { getPatientsService } from "@/services";
 
 export default async function createPatient(
   createPatient: Omit<Patient, "id">
 ) {
-  const repository = await getPatientsRepository();
-  await repository.save(createPatient);
+  const patientsService = await getPatientsService();
+  await patientsService.save(createPatient);
 
   revalidatePath("/administration/patients");
 }
