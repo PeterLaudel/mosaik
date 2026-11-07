@@ -23,14 +23,24 @@ module.exports = defineConfig([
             "no-param-reassign": ["error", { props: true }],
         },
     },
-    ...nextCoreWebVitals,
-    globalIgnores(["**/*.d.ts", "playwright-report/**", ".next/**", "**/*.js"]),
+    ...nextCoreWebVitals.map((config) => ({ ...config, files: ["apps/web/**/*.{ts,tsx}"] })),
+    { settings: { next: { rootDir: "apps/web/" } } },
+    globalIgnores([
+        "**/*.d.ts",
+        "**/playwright-report/**",
+        "**/.next/**",
+        "**/dist/**",
+        "**/*.js",
+        // Tauri sidecar packaging of the old single Next.js server, not yet adapted to api + web
+        "server.ts",
+        "inspector-polyfill.ts",
+    ]),
     ...tseslint.config(
         ...tseslint.configs.recommendedTypeChecked,
         {
             languageOptions: {
                 parserOptions: {
-                    project: true,
+                    projectService: true,
                     tsconfigRootDir: __dirname,
                 },
             },
@@ -49,7 +59,7 @@ module.exports = defineConfig([
             },
         },
         {
-            files: ["**/tasks/**/*.{js,ts}", "src/database/**/*.{js,ts}"],
+            files: ["**/tasks/**/*.{js,ts}", "apps/api/src/database/**/*.{js,ts}", "apps/api/src/main.ts"],
             rules: {
                 "no-console": "off",
                 "@typescript-eslint/no-floating-promises": "off",

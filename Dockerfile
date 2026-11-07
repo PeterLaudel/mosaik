@@ -24,26 +24,28 @@ RUN npm run build
 RUN chmod +x docker-entrypoint.sh
 ENTRYPOINT ["./docker-entrypoint.sh"]
 
-# Running the app
+# Running the app: one image, two processes. Default is the API; run the web app with
+#   docker run <image> node_modules/next/dist/bin/next start apps/web
 FROM gcr.io/distroless/nodejs24 AS runner
 WORKDIR /app
 
-# Mark as prod, disable telemetry, set port
 ENV NODE_ENV=production
+ENV API_PORT=3001
 ENV PORT=3000
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Copy from build
-COPY --from=builder --chown=nonroot:nonroot /app/next.config.ts ./
-COPY --from=builder --chown=nonroot:nonroot /app/public ./public
-COPY --from=builder --chown=nonroot:nonroot /app/.next ./.next
+COPY --from=builder --chown=nonroot:nonroot /app/package.json ./
 COPY --from=builder --chown=nonroot:nonroot /app/node_modules ./node_modules
-COPY --from=builder --chown=nonroot:nonroot /app/src ./src
-COPY --from=builder --chown=nonroot:nonroot /app/migrations ./migrations
-COPY --from=builder --chown=nonroot:nonroot /app/tasks ./tasks
-COPY --from=builder --chown=nonroot:nonroot /app/tsconfig.json ./tsconfig.json
+COPY --from=builder --chown=nonroot:nonroot /app/packages/contract/package.json ./packages/contract/
+COPY --from=builder --chown=nonroot:nonroot /app/packages/contract/dist ./packages/contract/dist
+COPY --from=builder --chown=nonroot:nonroot /app/apps/api/package.json ./apps/api/
+COPY --from=builder --chown=nonroot:nonroot /app/apps/api/dist ./apps/api/dist
+COPY --from=builder --chown=nonroot:nonroot /app/apps/web/package.json /app/apps/web/next.config.ts ./apps/web/
+COPY --from=builder --chown=nonroot:nonroot /app/apps/web/public ./apps/web/public
+COPY --from=builder --chown=nonroot:nonroot /app/apps/web/.next ./apps/web/.next
+# Transitional @api/* bridge: web still loads apps/api sources for domains not yet behind the API
+COPY --from=builder --chown=nonroot:nonroot /app/apps/api/src ./apps/api/src
 
 USER nonroot
 
-# Run app command
-CMD ["./node_modules/next/dist/bin/next", "start"]
+CMD ["apps/api/dist/src/main.js"]

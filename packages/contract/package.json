@@ -1,0 +1,25 @@
+{
+  "name": "@mosaik/contract",
+  "version": "0.0.0",
+  "private": true,
+  "description": "oRPC contract, zod schemas and domain models shared by @mosaik/api and @mosaik/web",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./dist/index.js"
+    },
+    "./models/*": {
+      "types": "./src/models/*.ts",
+      "default": "./dist/models/*.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "dev": "tsc -p tsconfig.build.json --watch --preserveWatchOutput",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@orpc/contract": "^1.16.2",
+    "zod": "^4.3.6"
+  }
+}

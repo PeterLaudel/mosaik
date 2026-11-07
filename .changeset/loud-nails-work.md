@@ -1,5 +1,5 @@
 ---
-"mosaik": minor
+"@mosaik/web": minor
 ---
 
 Add homeworks

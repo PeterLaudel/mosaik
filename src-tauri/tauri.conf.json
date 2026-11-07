@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "Mosaik",
-  "version": "../package.json",
+  "version": "../apps/web/package.json",
   "identifier": "www.psychotherapie-seliger.de",
   "build": {
     "frontendDist": "http://localhost:3000/administration/patients",

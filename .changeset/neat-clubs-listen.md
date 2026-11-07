@@ -1,5 +1,5 @@
 ---
-"mosaik": patch
+"@mosaik/web": patch
 ---
 
 Fix styling of service list

@@ -7,11 +7,11 @@
 .yarn/install-state.gz
 
 # testing
-/coverage
+coverage
 
 # next.js
-/.next/
-/out/
+.next/
+out/
 
 # production
 /build
@@ -39,20 +39,17 @@ docker-compose.override.yml
 
 .env.development
 
-/tmp
+tmp/
 
 # Playwright
 node_modules/
-/test-results/
-/playwright-report/
-/blob-report/
-/playwright/.cache/
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
 
 mosaik
 server.js
-/migrations/**/*.js
-/tasks/**/*.js
-/seeds/**/*.js
-/src/**/*.js
+dist/
 
 /src-tauri/binary/mosaik-*

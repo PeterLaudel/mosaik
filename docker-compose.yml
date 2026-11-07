@@ -41,7 +41,7 @@ services:
       context: .
       target: builder
     image: "${IMAGE:-mosaik:dev}"
-    command: npx tsx src/worker.ts
+    command: npm run worker
     depends_on:
       postgres:
         condition: service_healthy

@@ -26,7 +26,7 @@ CI=true npm run e2e # playwright e2e tests (CI=true disables retries and the bro
 
 ## E2e tests cover every UI feature with Playwright
 
-Every user-facing feature must have Playwright e2e tests in `e2e/<feature>/`. Tests use the custom `test` fixture from `e2e/fixtures.ts`, which injects an auth cookie and clears the database after each test. Seed data goes through factories — never raw DB calls in spec files.
+Every user-facing feature must have Playwright e2e tests in `apps/web/e2e/<feature>/`. Tests use the custom `test` fixture from `apps/web/e2e/fixtures.ts`, which injects an auth cookie and clears the database after each test. Seed data goes through factories — never raw DB calls in spec files.
 
 ```ts
 import { patientFactory } from "factories/patient";
@@ -51,7 +51,7 @@ E2e tests require a production build (`npm run build`) and run with `CI=true npm
 
 ## Form save button placement
 
-Every form that persists data must use `SubmitButton` (`src/components/submitButton.tsx`) as its submit control. Place it at the bottom of the form, left-aligned:
+Every form that persists data must use `SubmitButton` (`apps/web/src/components/submitButton.tsx`) as its submit control. Place it at the bottom of the form, left-aligned:
 
 ```tsx
 <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4">
@@ -286,12 +286,12 @@ Query methods that take filter parameters (e.g. `patientId` as a search criterio
 
 ## New migration files must be registered in `migrationProvider.ts`
 
-Adding a file to `migrations/` is not enough on its own. `src/database/migrationProvider.ts` explicitly imports every migration into a `Record<string, Migration>` — this is what the app runtime, unit/integration tests, and e2e setup actually use via `Migrator`. The `kysely migrate:latest` CLI (`npm run db:migrate`) discovers files from the folder directly and will run a new migration fine, which can mask a missing registration until tests or a fresh e2e/CI database fail.
+Adding a file to `apps/api/migrations/` is not enough on its own. `apps/api/src/database/migrationProvider.ts` explicitly imports every migration into a `Record<string, Migration>` — this is what the app runtime, unit/integration tests, and e2e setup actually use via `Migrator`. The `kysely migrate:latest` CLI (`npm run db:migrate`) discovers files from the folder directly and will run a new migration fine, which can mask a missing registration until tests or a fresh e2e/CI database fail.
 
 When adding a migration, always update both files:
 
 ```ts
-// src/database/migrationProvider.ts
+// apps/api/src/database/migrationProvider.ts
 import * as m0018 from "../../migrations/0018_alter_sessions_add_pseudonymization";
 
 const migrations: Record<string, Migration> = {

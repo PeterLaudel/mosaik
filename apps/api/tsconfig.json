@@ -1,0 +1,10 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "types": ["node", "jest"]
+  },
+  "include": ["src", "migrations", "seeds", "factories", "tasks", ".config/**/*.ts", "jest.config.ts", "jest.setup.ts"]
+}
