@@ -1,8 +1,8 @@
-import { invoiceFactory } from "factories/invoice";
+import { invoiceFactory } from "factories/invoices";
 import { test, expect } from "../fixtures";
-import { patientFactory } from "factories/patient";
-import { patientInvoiceFactory } from "factories/patientInvoice";
-import { therapeutFactory } from "factories/therapeut";
+import { patientFactory } from "factories/patients";
+import { patientInvoiceFactory } from "factories/patientInvoices";
+import { therapeutFactory } from "factories/therapeuts";
 
 test("sents an invoice email", async ({ page }) => {
   const therapeut = await therapeutFactory.create();
@@ -31,7 +31,7 @@ test("sents an invoice email", async ({ page }) => {
   });
   expect(emailData["to"]).toStrictEqual([
     {
-      address: patient.billingInfo.email,
+      address: patient.billingEmail,
       name: `${patient.name} ${patient.surname}`,
     },
   ]);

@@ -1,4 +1,4 @@
-import { sessionFactory } from "factories/session";
+import { sessionFactory } from "factories/sessions";
 import { test, expect } from "../fixtures";
 
 test("shows a session with pre-filled values", async ({ page }) => {

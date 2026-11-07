@@ -1,5 +1,6 @@
-import { patientFactory } from "factories/patient";
-import { treatmentPlanFactory, treatmentGoalFactory } from "factories/treatmentPlan";
+import { patientFactory } from "factories/patients";
+import { treatmentPlanFactory } from "factories/treatmentPlans";
+import { treatmentGoalFactory } from "factories/treatmentGoals";
 import { test, expect } from "../fixtures";
 
 test("shows existing plan values on load", async ({ page }) => {

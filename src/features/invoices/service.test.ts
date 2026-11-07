@@ -1,9 +1,9 @@
 import { getDb } from "@/initialize";
 import { InvoicesRepository } from "./repository";
-import { invoiceFactory } from "factories/invoice";
-import { patientFactory } from "factories/patient";
-import { patientInvoiceFactory } from "factories/patientInvoice";
-import { therapeutFactory } from "factories/therapeut";
+import { invoiceFactory } from "factories/invoices";
+import { patientFactory } from "factories/patients";
+import { patientInvoiceFactory } from "factories/patientInvoices";
+import { therapeutFactory } from "factories/therapeuts";
 import { encryptPdf } from "./encryptPdf";
 import { InvoicesService } from "./service";
 import mailInvoice from "./mail";

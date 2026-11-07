@@ -1,19 +1,49 @@
 import { sql } from "kysely";
 import timekeeper from "timekeeper";
-import { patientFactory } from "factories/patient";
+import { patientFactory } from "factories/patients";
 import { getDb } from "@/initialize";
 import { InvoicesRepository } from "./repository";
-import { invoiceFactory } from "factories/invoice";
-import { patientInvoiceFactory } from "factories/patientInvoice";
-import { serviceFactory } from "factories/service";
-import { invoicePositionFactory } from "factories/invoicePosition";
+import { invoiceFactory } from "factories/invoices";
+import { patientInvoiceFactory } from "factories/patientInvoices";
+import { serviceFactory } from "factories/services";
+import { invoicePositionFactory } from "factories/invoicePositions";
 import { databaseDialect } from "@/environment";
-import { therapeutFactory } from "factories/therapeut";
-import { InvoicePatient } from "./model";
+import { therapeutFactory } from "factories/therapeuts";
+import { serviceAmountFactory } from "factories/serviceAmounts";
+import { BillableService, InvoicePatient } from "./model";
 
-// An invoice carries only the invoices feature's view of the patient, not the full patient.
-function toInvoicePatient({ address, email, ...invoicePatient }: InvoicePatient & { address: unknown; email: string }): InvoicePatient {
-  return invoicePatient;
+type PatientRow = Awaited<ReturnType<typeof patientFactory.create>>;
+type ServiceRow = Awaited<ReturnType<typeof serviceFactory.create>>;
+
+// The invoices feature's view of a patients row.
+function toInvoicePatient(row: PatientRow): InvoicePatient {
+  const billingAddress = { street: row.billingStreet, city: row.billingCity, zip: row.billingZip };
+  const billingInfo = {
+    name: row.billingName,
+    surname: row.billingSurname,
+    email: row.billingEmail,
+    address: billingAddress,
+  };
+  return {
+    id: row.id,
+    name: row.name,
+    surname: row.surname,
+    birthdate: row.birthdate,
+    diagnosis: row.diagnosis,
+    billingInfo,
+    invoicePassword: row.invoicePassword,
+  };
+}
+
+// The invoices feature's view of a services row and its price rows.
+function toBillableService(row: ServiceRow, amounts: BillableService["amounts"]): BillableService {
+  return {
+    id: row.id,
+    short: row.short,
+    originalGopNr: row.originalGopNr,
+    description: row.description,
+    amounts,
+  };
 }
 
 describe("InvoicesRepository", () => {
@@ -26,8 +56,10 @@ describe("InvoicesRepository", () => {
 
   describe("#create", () => {
     it("creates a new invoice", async () => {
-      const patient = await patientFactory.create();
-      const service = await serviceFactory.create();
+      const patientRow = await patientFactory.create();
+      const patient = toInvoicePatient(patientRow);
+      const serviceRow = await serviceFactory.create();
+      const service = toBillableService(serviceRow, []);
 
       const createdInvoice = await invoicesRepository.create({
         patient,
@@ -52,7 +84,7 @@ describe("InvoicesRepository", () => {
         base64Pdf: "data:application/pdf;base64,example",
         invoiceAmount: 200,
         status: "pending",
-        patient: toInvoicePatient(patient),
+        patient,
         positions: [
           {
             amount: 2,
@@ -69,9 +101,11 @@ describe("InvoicesRepository", () => {
 
   describe("#update", () => {
     it("updates an existing invoice", async () => {
-      const patient = await patientFactory.create();
+      const patientRow = await patientFactory.create();
+      const patient = toInvoicePatient(patientRow);
       const invoice = await invoiceFactory.create();
-      const service = await serviceFactory.create();
+      const serviceRow = await serviceFactory.create();
+      const service = toBillableService(serviceRow, []);
       await patientInvoiceFactory.create({
         patientId: patient.id,
         invoiceId: invoice.id,
@@ -106,7 +140,7 @@ describe("InvoicesRepository", () => {
         base64Pdf: "data:application/pdf;base64,updated-example",
         invoiceAmount: 200,
         status: "sent",
-        patient: toInvoicePatient(patient),
+        patient,
         positions: [
           {
             amount: 10,
@@ -132,19 +166,13 @@ describe("InvoicesRepository", () => {
 
   describe("#findBillableServices", () => {
     it("returns catalog services with their prices", async () => {
-      const service = await serviceFactory.create();
+      const serviceRow = await serviceFactory.create();
+      const amount = await serviceAmountFactory.create({ serviceId: serviceRow.id, factor: "2.3", price: 42 });
 
       const services = await invoicesRepository.findBillableServices();
 
-      expect(services).toEqual([
-        {
-          id: service.id,
-          short: service.short,
-          originalGopNr: service.originalGopNr,
-          description: service.description,
-          amounts: expect.arrayContaining(service.amounts),
-        },
-      ]);
+      const amounts = [{ factor: amount.factor, price: amount.price }];
+      expect(services).toEqual([toBillableService(serviceRow, amounts)]);
     });
   });
 

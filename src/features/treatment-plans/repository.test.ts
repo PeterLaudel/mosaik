@@ -1,7 +1,8 @@
 import { getDb } from "@/initialize";
 import { TreatmentPlansRepository } from "./repository";
-import { treatmentPlanFactory, treatmentGoalFactory } from "factories/treatmentPlan";
-import { patientFactory } from "factories/patient";
+import { treatmentPlanFactory } from "factories/treatmentPlans";
+import { treatmentGoalFactory } from "factories/treatmentGoals";
+import { patientFactory } from "factories/patients";
 
 describe("TreatmentPlansRepository", () => {
   let repo: TreatmentPlansRepository;

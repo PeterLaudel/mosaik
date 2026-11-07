@@ -1,8 +1,8 @@
 import { getDb } from "@/initialize";
 import { SessionsRepository } from "./repository";
-import { sessionFactory } from "factories/session";
-import { patientFactory } from "factories/patient";
-import { therapeutFactory } from "factories/therapeut";
+import { sessionFactory } from "factories/sessions";
+import { patientFactory } from "factories/patients";
+import { therapeutFactory } from "factories/therapeuts";
 import { Session } from "./model";
 
 describe("SessionsRepository", () => {
@@ -146,7 +146,7 @@ describe("SessionsRepository", () => {
         name: patient.name,
         surname: patient.surname,
         birthdate: patient.birthdate,
-        address: patient.address,
+        address: { street: patient.street, city: patient.city, zip: patient.zip },
       });
     });
   });
@@ -163,7 +163,8 @@ describe("SessionsRepository", () => {
 
   describe("#create", () => {
     it("creates a new session", async () => {
-      const patient = await patientFactory.create();
+      const patientRow = await patientFactory.create();
+      const patient = await sessionsRepository.findPatient(patientRow.id);
 
       const session = await sessionsRepository.create({
         patient,
@@ -199,7 +200,8 @@ describe("SessionsRepository", () => {
     });
 
     it("persists interventions as a JSON array", async () => {
-      const patient = await patientFactory.create();
+      const patientRow = await patientFactory.create();
+      const patient = await sessionsRepository.findPatient(patientRow.id);
       const interventions = ["Psychoedukation", "EMDR"];
 
       const session = await sessionsRepository.create({
@@ -229,7 +231,8 @@ describe("SessionsRepository", () => {
     });
 
     it("enqueues a session.finalized outbox event and marks pseudonymization pending when created as final", async () => {
-      const patient = await patientFactory.create();
+      const patientRow = await patientFactory.create();
+      const patient = await sessionsRepository.findPatient(patientRow.id);
 
       const session = await sessionsRepository.create({
         patient,
@@ -266,7 +269,8 @@ describe("SessionsRepository", () => {
 
   describe("#update", () => {
     it("updates an existing session", async () => {
-      const patient = await patientFactory.create();
+      const patientRow = await patientFactory.create();
+      const patient = await sessionsRepository.findPatient(patientRow.id);
       const session = await sessionFactory.create({
         patientId: patient.id
       });
@@ -291,7 +295,8 @@ describe("SessionsRepository", () => {
     });
 
     it("enqueues a session.finalized outbox event and marks pseudonymization pending when transitioning to final", async () => {
-      const patient = await patientFactory.create();
+      const patientRow = await patientFactory.create();
+      const patient = await sessionsRepository.findPatient(patientRow.id);
       const session = await sessionFactory.create({ patientId: patient.id, status: "draft" });
 
       await sessionsRepository.update({
@@ -326,7 +331,8 @@ describe("SessionsRepository", () => {
     });
 
     it("does not enqueue a second outbox event when updating an already-final session", async () => {
-      const patient = await patientFactory.create();
+      const patientRow = await patientFactory.create();
+      const patient = await sessionsRepository.findPatient(patientRow.id);
       const session = await sessionFactory.create({ patientId: patient.id, status: "final" });
 
       await sessionsRepository.update({

@@ -1,9 +1,9 @@
 import { getDb } from "@/initialize";
 import { pseudonymizeSession } from "./pseudonymizer";
 import { generateText } from "@/shared/ollama/client";
-import { sessionFactory } from "factories/session";
-import { patientFactory } from "factories/patient";
-import { therapeutFactory } from "factories/therapeut";
+import { sessionFactory } from "factories/sessions";
+import { patientFactory } from "factories/patients";
+import { therapeutFactory } from "factories/therapeuts";
 
 jest.mock("@/shared/ollama/client", () => ({
   generateText: jest.fn(),
@@ -22,7 +22,9 @@ describe("pseudonymizeSession", () => {
       name: "Anna",
       surname: "Muster",
       birthdate: "1990-05-03",
-      address: { street: "Hauptstraße 1", city: "Musterstadt", zip: "12345" },
+      street: "Hauptstraße 1",
+      city: "Musterstadt",
+      zip: "12345",
     });
     await therapeutFactory.create({ name: "Peter", surname: "Seliger" });
     const session = await sessionFactory.create({

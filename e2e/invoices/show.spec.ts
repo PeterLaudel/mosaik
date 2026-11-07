@@ -1,7 +1,7 @@
-import { invoiceFactory } from "factories/invoice";
+import { invoiceFactory } from "factories/invoices";
 import { test, expect } from "../fixtures";
-import { patientFactory } from "factories/patient";
-import { patientInvoiceFactory } from "factories/patientInvoice";
+import { patientFactory } from "factories/patients";
+import { patientInvoiceFactory } from "factories/patientInvoices";
 
 test("filter invoices", async ({ page }) => {
   const patient1 = await patientFactory.create({ name: "Jane", surname: "Doe" });

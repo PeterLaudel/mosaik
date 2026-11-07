@@ -1,4 +1,4 @@
-import { patientFactory } from "factories/patient";
+import { patientFactory } from "factories/patients";
 import { test, expect } from "../fixtures";
 
 test("shows empty form for a patient with no treatment plan", async ({ page }) => {

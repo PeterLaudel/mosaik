@@ -1,8 +1,7 @@
-import { billingInfoFactory } from "../factories/billingInfo";
-import { invoiceFactory } from "../factories/invoice";
-import { patientFactory } from "../factories/patient";
-import { patientInvoiceFactory } from "../factories/patientInvoice";
-import { therapeutFactory } from "../factories/therapeut";
+import { invoiceFactory } from "factories/invoices";
+import { patientFactory } from "factories/patients";
+import { patientInvoiceFactory } from "factories/patientInvoices";
+import { therapeutFactory } from "factories/therapeuts";
 
 export async function seed() {
   await therapeutFactory.create();
@@ -12,17 +11,13 @@ export async function seed() {
       name: "Jane",
       surname: "Doe",
       email: "peter.laudel+jane.doe@gmail.com",
-      billingInfo: billingInfoFactory.build({
-        email: "peter.laudel+jane.do.invoice@gmail.com",
-      }),
+      billingEmail: "peter.laudel+jane.do.invoice@gmail.com",
     });
     const patient2 = await patientFactory.create({
       name: "John",
       surname: "Smith",
       email: "peter.laudel+john.smith@gmail.com",
-      billingInfo: billingInfoFactory.build({
-        email: "peter.laudel+john.smith.invoice@gmail.com",
-      }),
+      billingEmail: "peter.laudel+john.smith.invoice@gmail.com",
     });
 
     const invoice1 = await invoiceFactory.create({

@@ -1,4 +1,4 @@
-import { therapeutFactory } from "factories/therapeut";
+import { therapeutFactory } from "factories/therapeuts";
 
 import { test, expect } from "../fixtures";
 

@@ -1,7 +1,8 @@
-import { therapeutFactory } from "factories/therapeut";
-import { serviceFactory } from "../../factories/service";
+import { therapeutFactory } from "factories/therapeuts";
+import { serviceFactory } from "factories/services";
+import { serviceAmountFactory } from "factories/serviceAmounts";
 import { test, expect } from "../fixtures";
-import { patientFactory } from "factories/patient";
+import { patientFactory } from "factories/patients";
 
 test("createas an invoice", async ({ page }) => {
   await therapeutFactory.create({});
@@ -12,6 +13,8 @@ test("createas an invoice", async ({ page }) => {
   const service = await serviceFactory.create({
     short: "Super short",
   });
+  await serviceAmountFactory.create({ serviceId: service.id, factor: "1.0", price: 10 });
+  await serviceAmountFactory.create({ serviceId: service.id, factor: "2.3", price: 23 });
 
   await page.goto("/administration/invoices");
 
