@@ -3,7 +3,6 @@ import { Database } from "@/initialize";
 import { patientSelector } from "./selectors/patient";
 
 export type PatientCreate = Omit<Patient, "id">;
-export type PatientUpdate = PatientCreate & { id: number };
 
 export class PatientsRepository {
   constructor(private readonly database: Database) {}
@@ -68,7 +67,7 @@ export class PatientsRepository {
     });
   }
 
-  async update(patient: PatientUpdate): Promise<Patient> {
+  async update(patient: Patient): Promise<Patient> {
     return await this.database.transaction().execute(async (trx) => {
       const { id, ...data } = patient;
       await trx

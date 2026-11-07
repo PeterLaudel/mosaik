@@ -6,7 +6,6 @@ import { Patient } from "@/models/patient";
 import { serviceSelector } from "./selectors/service";
 import { jsonObjectFrom, jsonArrayFrom } from "@/database";
 export type InvoiceCreate = Omit<Invoice, "id">;
-export type InvoiceUpdate = InvoiceCreate & { id: number };
 
 export class InvoicesRepository {
   constructor(private readonly database: Database) {}
@@ -27,7 +26,7 @@ export class InvoicesRepository {
     });
   }
 
-  public async update(invoice: InvoiceUpdate): Promise<Invoice> {
+  public async update(invoice: Invoice): Promise<Invoice> {
     return await this.database.transaction().execute(async (trx) => {
       const { id } = invoice;
       await trx

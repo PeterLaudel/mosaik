@@ -2,7 +2,6 @@ import { Patient } from "@/models/patient";
 import {
   PatientCreate,
   PatientsRepository,
-  PatientUpdate,
 } from "@/repositories/patientsRepository";
 
 export class PatientsService {
@@ -12,7 +11,7 @@ export class PatientsService {
     return this.patientsRepository.create(patient);
   }
 
-  async update(patient: PatientUpdate): Promise<Patient> {
+  async update(patient: Patient): Promise<Patient> {
     return this.patientsRepository.update(patient);
   }
 }

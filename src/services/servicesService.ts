@@ -1,7 +1,6 @@
 import { Service } from "@/models/service";
 import ServicesRepository, {
   ServiceCreate,
-  ServiceUpdate,
 } from "@/repositories/servicesRepository";
 
 export class ServicesService {
@@ -11,7 +10,7 @@ export class ServicesService {
     return this.servicesRepository.create(service);
   }
 
-  async update(service: ServiceUpdate): Promise<Service> {
+  async update(service: Service): Promise<Service> {
     return this.servicesRepository.update(service);
   }
 }

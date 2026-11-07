@@ -3,7 +3,6 @@ import { Amount, Service } from "@/models/service";
 import { serviceSelector } from "./selectors/service";
 
 export type ServiceCreate = Omit<Service, "id">;
-export type ServiceUpdate = ServiceCreate & { id: number };
 
 export default class ServicesRepository {
   constructor(private readonly database: Database) {}
@@ -46,7 +45,7 @@ export default class ServicesRepository {
     });
   }
 
-  public async update(service: ServiceUpdate): Promise<Service> {
+  public async update(service: Service): Promise<Service> {
     return await this.database.transaction().execute(async (trx) => {
       const { id, amounts, ...data } = service;
       await trx

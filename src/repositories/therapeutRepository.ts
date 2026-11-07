@@ -2,7 +2,6 @@ import { type Database } from "@/initialize";
 import { Therapeut } from "@/models/therapeut";
 
 export type TherapeutCreate = Omit<Therapeut, "id">;
-export type TherapeutUpdate = TherapeutCreate & { id: number };
 
 export class TherapeutRepository {
   constructor(private readonly database: Database) {}
@@ -19,7 +18,7 @@ export class TherapeutRepository {
       .executeTakeFirstOrThrow();
   }
 
-  public async update(therapeut: TherapeutUpdate): Promise<Therapeut> {
+  public async update(therapeut: Therapeut): Promise<Therapeut> {
     const { id, ...data } = therapeut;
     return await this.database
       .updateTable("therapeuts")

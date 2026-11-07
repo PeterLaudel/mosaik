@@ -275,10 +275,7 @@ The child model type contains only data fields — no `id`, no parent FK, no `cr
 
 Each repository exposes a separate `create` and `update` method. Never write a combined `save`/`upsert` that branches on whether an `id` is present: inserting and updating are different responsibilities (an update may need the previous state, for example to detect a status transition), and a combined method hides which one a caller actually performs.
 
-Each repository exports two payload types next to the class:
-
-- `XCreate`: the model without `id` (and without other DB-managed columns such as `createdAt`)
-- `XUpdate`: `XCreate & { id: number }`
+Each repository exports an `XCreate` payload type next to the class: the model without `id` (and without other DB-managed columns such as `createdAt`). `update` takes the model itself. Only when the model carries DB-managed columns that callers must not send (e.g. `createdAt` on `Session` and `TreatmentPlan`) does the repository also export `XUpdate = XCreate & { id: number }`; don't add an `XUpdate` alias that is structurally identical to the model.
 
 ```ts
 async create(plan: TreatmentPlanCreate): Promise<TreatmentPlan> {

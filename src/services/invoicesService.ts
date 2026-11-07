@@ -3,7 +3,6 @@ import { Invoice } from "@/models/invoice";
 import {
   InvoiceCreate,
   InvoicesRepository,
-  InvoiceUpdate,
 } from "@/repositories/invoicesRepository";
 import { TherapeutRepository } from "@/repositories/therapeutRepository";
 import { encryptPdf } from "./encryptPdf";
@@ -19,7 +18,7 @@ export class InvoicesService {
     return this.invoicesRepository.create(invoice);
   }
 
-  async update(invoice: InvoiceUpdate): Promise<Invoice> {
+  async update(invoice: Invoice): Promise<Invoice> {
     return this.invoicesRepository.update(invoice);
   }
 

@@ -2,7 +2,6 @@ import { Therapeut } from "@/models/therapeut";
 import {
   TherapeutCreate,
   TherapeutRepository,
-  TherapeutUpdate,
 } from "@/repositories/therapeutRepository";
 
 export class TherapeutsService {
@@ -12,7 +11,7 @@ export class TherapeutsService {
     return this.therapeutRepository.create(therapeut);
   }
 
-  async update(therapeut: TherapeutUpdate): Promise<Therapeut> {
+  async update(therapeut: Therapeut): Promise<Therapeut> {
     return this.therapeutRepository.update(therapeut);
   }
 }
