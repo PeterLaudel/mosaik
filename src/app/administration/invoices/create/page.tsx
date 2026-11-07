@@ -1,27 +1,17 @@
 "use server";
 
-import {
-  getInvoicesRepository,
-  getPatientsRepository,
-  getServicesRepository,
-  getTherapeutsRepository,
-} from "@/server";
+import { getInvoicesService } from "@/features/invoices";
 import InvoiceForm from "../_forms/invoiceForm";
 import { createInvoice } from "./action";
 
 export default async function Page() {
-  const patientRepository = await getPatientsRepository();
-  const patients = await patientRepository.all();
-
-  const servicesRepository = await getServicesRepository();
-  const services = await servicesRepository.all();
-
-  const invoiceRepository = await getInvoicesRepository();
-  const invoiceNumber = await invoiceRepository.generateInvoiceNumber();
-
-  const therapeutsRepository = await getTherapeutsRepository();
-  const therapeuts = await therapeutsRepository.all();
-  const therapeut = therapeuts[0];
+  const invoicesService = await getInvoicesService();
+  const [patients, services, invoiceNumber, therapeut] = await Promise.all([
+    invoicesService.findPatients(),
+    invoicesService.findBillableServices(),
+    invoicesService.generateInvoiceNumber(),
+    invoicesService.findIssuer(),
+  ]);
   if (!therapeut) {
     return <div>Bitte legen Sie zuerst den Therapeut vollständig an!</div>;
   }

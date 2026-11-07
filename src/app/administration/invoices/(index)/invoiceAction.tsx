@@ -1,4 +1,4 @@
-import { Invoice } from "@/models/invoice";
+import { Invoice } from "@/features/invoices/model";
 import { Button, CircularProgress, Dialog, IconButton } from "@mui/material";
 import { Delete, Download, Send } from "@mui/icons-material";
 import { deleteInvoice, sendInvoiceEmail } from "./action";

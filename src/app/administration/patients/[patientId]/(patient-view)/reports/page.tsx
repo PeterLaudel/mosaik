@@ -1,4 +1,4 @@
-import { getSessionsRepository } from "@/server";
+import { getSessionsService } from "@/features/sessions";
 import ReportsTab from "./reportsTab";
 
 interface Props {
@@ -7,8 +7,8 @@ interface Props {
 
 export default async function Page({ params }: Props) {
   const { patientId } = await params;
-  const sessionsRepository = await getSessionsRepository();
-  const { rows: sessions } = await sessionsRepository.filter({
+  const sessionsService = await getSessionsService();
+  const { rows: sessions } = await sessionsService.filter({
     patientId: Number(patientId),
     status: "final",
   });

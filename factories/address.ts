@@ -1,6 +1,6 @@
 import { Factory } from "fishery";
 import { faker } from "@faker-js/faker";
-import Address from "@/models/address";
+import type { Address } from "@/features/patients/model";
 
 export const addressFactory: Factory<Address> = Factory.define<Address>(() => ({
   street: faker.location.streetAddress(),

@@ -1,4 +1,4 @@
-import { getInvoicesRepository } from "@/server";
+import { getInvoicesService } from "@/features/invoices";
 import { NextRequest } from "next/server";
 
 export async function GET(
@@ -7,8 +7,8 @@ export async function GET(
 ) {
   const { invoiceNumber } = await params;
 
-  const invoicesRepository = await getInvoicesRepository();
-  const invoice = await invoicesRepository.findByInvoiceNumber(invoiceNumber);
+  const invoicesService = await getInvoicesService();
+  const invoice = await invoicesService.findByInvoiceNumber(invoiceNumber);
 
   const pdfBuffer = Buffer.from(invoice.base64Pdf, "base64");
 

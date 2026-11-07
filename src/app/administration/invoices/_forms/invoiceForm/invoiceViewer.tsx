@@ -4,12 +4,12 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useFormContext, useWatch } from "react-hook-form";
 import type { FormInvoice } from ".";
 import type { InvoicePosition } from "./serviceSection";
-import { Therapeut } from "@/models/therapeut";
+import { InvoiceIssuer } from "@/features/invoices/model";
 import { QueryClient, QueryClientProvider, useMutation } from "@tanstack/react-query";
-import { CreatePdfParams } from "@/invoicePdf";
+import { CreatePdfParams } from "@/features/invoices/pdf";
 
 interface Props {
-  therapeut: Therapeut;
+  therapeut: InvoiceIssuer;
   invoiceNumber: string;
 }
 

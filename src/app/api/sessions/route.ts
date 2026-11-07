@@ -1,4 +1,4 @@
-import { getSessionsRepository } from "@/server";
+import { getSessionsService } from "@/features/sessions";
 import { NextRequest, NextResponse } from "next/server";
 
 export const GET = async (req: NextRequest) => {
@@ -7,8 +7,8 @@ export const GET = async (req: NextRequest) => {
   const page = Number(searchParams.get("page") ?? 0);
   const pageSize = Number(searchParams.get("pageSize") ?? 50);
 
-  const sessionsRepository = await getSessionsRepository();
-  const result = await sessionsRepository.filter({
+  const sessionsService = await getSessionsService();
+  const result = await sessionsService.filter({
     patientId: patientId ? Number(patientId) : undefined,
     page,
     pageSize,

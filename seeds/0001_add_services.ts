@@ -1,6 +1,6 @@
 import { Kysely } from "kysely";
 import { Database } from "../src/db";
-import { Service } from "@/models/service";
+import { Service } from "@/features/services/model";
 
 const services: Omit<Service, "id">[] = [
   {

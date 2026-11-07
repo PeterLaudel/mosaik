@@ -1,7 +1,7 @@
 "use server";
 
-import { TherapeutCreate } from "@/repositories/therapeutRepository";
-import { getTherapeutsService } from "@/services";
+import { TherapeutCreate } from "@/features/therapeuts/model";
+import { getTherapeutsService } from "@/features/therapeuts";
 import { revalidatePath } from "next/cache";
 
 export async function createTherapeut(data: TherapeutCreate): Promise<void> {

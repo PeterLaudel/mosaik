@@ -3,7 +3,7 @@
 import { HourglassEmpty, Send, CheckCircle, Close } from "@mui/icons-material";
 import { Autocomplete, IconButton, InputAdornment, TextField } from "@mui/material";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { Invoice } from "@/models/invoice";
+import { Invoice } from "@/features/invoices/model";
 
 type InvoiceStatus = Invoice["status"];
 

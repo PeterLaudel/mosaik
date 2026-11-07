@@ -1,4 +1,5 @@
-import { getSessionsRepository, getTreatmentPlansRepository } from "@/server";
+import { getSessionsService } from "@/features/sessions";
+import { getTreatmentPlansService } from "@/features/treatment-plans";
 import SessionFormShell from "../_forms/sessionFormShell";
 
 interface Props {
@@ -7,16 +8,16 @@ interface Props {
 
 export default async function Page(props: Props) {
   const { patientId, sessionId } = await props.params;
-  const [sessionsRepo, plansRepo] = await Promise.all([
-    getSessionsRepository(),
-    getTreatmentPlansRepository(),
+  const [sessionsService, treatmentPlansService] = await Promise.all([
+    getSessionsService(),
+    getTreatmentPlansService(),
   ]);
 
-  const session = await sessionsRepo.find(Number(sessionId));
+  const session = await sessionsService.find(Number(sessionId));
 
   const [treatmentPlan, previousSession] = await Promise.all([
-    plansRepo.findByPatientId(Number(patientId)),
-    sessionsRepo.findPreviousSession(Number(patientId), session.sessionNumber),
+    treatmentPlansService.findByPatientId(Number(patientId)),
+    sessionsService.findPreviousSession(Number(patientId), session.sessionNumber),
   ]);
 
   return (

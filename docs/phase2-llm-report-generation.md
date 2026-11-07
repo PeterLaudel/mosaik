@@ -50,7 +50,7 @@ Deliverables: two migration files, Kysely DB types updated.
 
 ---
 
-## Step 2 — Pseudonymization: Service (`src/server/pseudonymizer.ts`)
+## Step 2 — Pseudonymization: Service (`src/features/sessions/pseudonymization/pseudonymizer.ts`)
 
 Runs entirely within the local cluster. Real patient data never leaves the system.
 
@@ -118,7 +118,7 @@ async function handleEvent(event: OutboxEvent) {
 }
 ```
 
-The worker and Next.js app share the same DB and `src/server/` code — no duplication needed. To swap to RabbitMQ or BullMQ later, only `src/worker.ts` needs to change.
+The worker and Next.js app share the same DB and `src/features/` code — no duplication needed. To swap to RabbitMQ or BullMQ later, only `src/worker.ts` needs to change.
 
 ### Two-Pass Approach
 
@@ -152,7 +152,7 @@ Deliberately **not** used:
 | Identifying dates | `[Datum]` |
 | Identifying job titles | `[Beruf]` |
 
-### Prompt — Pseudonymization (`src/server/prompts/pseudonymization.ts`)
+### Prompt — Pseudonymization (`src/features/sessions/pseudonymization/pseudonymization.ts`)
 
 System prompt and user message are separated — enables prompt caching if later switched to Claude API. Prompts remain in German as they instruct a German-language task.
 
@@ -267,11 +267,11 @@ Deliverables: two migration files, `Report` model, `reportsRepository` following
 
 ---
 
-## Step 5 — Report Generation: Service (`src/server/reportGenerator.ts`)
+## Step 5 — Report Generation: Service (`src/features/reports/reportGenerator.ts`)
 
 Receives only pseudonymized data (from the verified modal text) and calls the Claude API.
 
-### Prompt Architecture (`src/server/prompts/reportGeneration.ts`)
+### Prompt Architecture (`src/features/reports/prompts.ts`)
 
 System prompt explains the JSON schema once, user message delivers only the data. This enables **Anthropic Prompt Caching** — the system prompt is only computed on the first call, then cached. Prompts remain in German as they instruct a German-language task.
 

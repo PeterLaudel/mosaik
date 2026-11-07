@@ -3,7 +3,7 @@ import { faker } from "@faker-js/faker";
 import { addressFactory } from "./address";
 import { billingInfoFactory } from "./billingInfo";
 import { getDb } from "@/initialize";
-import { Patient } from "@/models/patient";
+import { Patient } from "@/features/patients/model";
 
 export const patientFactory = Factory.define<
   Omit<Patient, "id">,

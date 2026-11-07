@@ -1,6 +1,6 @@
 "use client";
 
-import { Invoice } from "@/models/invoice";
+import { Invoice } from "@/features/invoices/model";
 
 interface Props {
   invoice: Invoice;

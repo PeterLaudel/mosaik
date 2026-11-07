@@ -1,8 +1,7 @@
 "use server";
 
-import { getSessionsService } from "@/services";
-import { Session } from "@/models/session";
-import { SessionCreate } from "@/repositories/sessionsRepository";
+import { getSessionsService } from "@/features/sessions";
+import { Session, SessionCreate } from "@/features/sessions/model";
 
 export async function createSession(patientId: number): Promise<Session> {
   const sessionsService = await getSessionsService();

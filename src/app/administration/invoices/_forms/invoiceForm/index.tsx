@@ -8,27 +8,23 @@ import { FormProvider, useForm } from "react-hook-form";
 import PatientSection from "./patientSection";
 import ServiceSection from "./serviceSection";
 import InvoiceViewer from "./invoiceViewer";
-import { Service } from "@/models/service";
-import { Patient } from "@/models/patient";
 import SubmitButton from "@/components/submitButton";
-import { Therapeut } from "@/models/therapeut";
-import { InvoiceCreate } from "@/repositories/invoicesRepository";
+import { InvoiceCreate, BillableService, Invoice, InvoiceIssuer, InvoicePatient } from "@/features/invoices/model";
 import { useSnackbar } from "@/contexts/snackbarProvider";
-import { Invoice } from "@/models/invoice";
 import { useRouter } from "next/navigation";
 import type { InvoicePosition } from "./serviceSection";
 
 interface Props {
   action: (invoice: InvoiceCreate) => Promise<Invoice>;
-  patients: Patient[];
-  services: Service[];
-  therapeut: Therapeut;
+  patients: InvoicePatient[];
+  services: BillableService[];
+  therapeut: InvoiceIssuer;
   invoiceNumber: string;
   initialValues?: FormInvoice;
 }
 
 export type FormInvoice = {
-  patient?: Patient;
+  patient?: InvoicePatient;
   invoicePositions: InvoicePosition[];
   invoiceAmount: number;
   base64Pdf?: string;

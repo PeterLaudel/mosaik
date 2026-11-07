@@ -1,9 +1,9 @@
 import { getDb } from "@/initialize";
-import { OutboxRepository } from "@/repositories/outboxRepository";
+import { OutboxRepository } from "@/shared/outbox/repository";
 import { pollOutbox } from "./worker";
-import { pseudonymizeSession } from "./server/pseudonymizer";
+import { pseudonymizeSession } from "@/features/sessions/pseudonymization/pseudonymizer";
 
-jest.mock("./server/pseudonymizer", () => ({
+jest.mock("@/features/sessions/pseudonymization/pseudonymizer", () => ({
   pseudonymizeSession: jest.fn(),
 }));
 

@@ -1,4 +1,4 @@
-import { Invoice } from "@/models/invoice";
+import { Invoice } from "@/features/invoices/model";
 import { CheckCircle, Email, HourglassEmpty } from "@mui/icons-material";
 import { Button, Menu, MenuItem } from "@mui/material";
 import { ArrowDropDownIcon } from "@mui/x-date-pickers";
