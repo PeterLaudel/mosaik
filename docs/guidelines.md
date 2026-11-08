@@ -22,32 +22,48 @@ npm run test        # jest unit/integration tests
 CI=true npm run e2e # playwright e2e tests (CI=true disables retries and the browser)
 ```
 
-`npm run ci` runs typecheck, lint, and unit tests in one command. E2e tests require the dev server to be running and a seeded database, so they are run separately.
+`npm run ci` runs typecheck, lint, and unit tests in one command. E2e tests need a production build of the UI (`npm run build`), so they are run separately.
 
-## E2e tests cover every UI feature with Playwright
+## E2e tests cover every UI feature with Playwright, against a mocked API
 
-Every user-facing feature must have Playwright e2e tests in `e2e/<feature>/`. Tests use the custom `test` fixture from `e2e/fixtures.ts`, which injects an auth cookie and clears the database after each test. Seed data goes through factories — never raw DB calls in spec files.
+Every user-facing feature must have Playwright e2e tests in `ui/e2e/<feature>/`. They run the built UI against a mock API instead of the real one: MSW handlers built from the contract with `@orpc/msw` (`api` in `ui/e2e/support/mockApi.ts`), served over HTTP on the API's port. oRPC parses and validates them like the real API. What the API does with a request (persistence, filtering, mail content) is covered by the API's own tests.
+
+Each test sets up the procedures its flow needs through `mock` from the `test` fixture in `ui/e2e/fixtures.ts`: `mock.<feature>.<procedure>(value)` or `mock.<feature>.<procedure>(({ input }) => value)`. Build response data with `fake.*` from `ui/e2e/support/factories.ts`. Everything is typed by the contract, so it stops compiling when the contract changes.
 
 ```ts
-import { patientFactory } from "factories/patients";
 import { test, expect } from "../fixtures";
+import { fake } from "../support/factories";
 
-test("creates a treatment plan and shows success message", async ({ page }) => {
-  const patient = await patientFactory.create();
+test("creates a treatment plan and shows success message", async ({ page, mock }) => {
+  const patient = fake.patient();
+  mock.patients.find(patient);
+  mock.treatmentPlans.findByPatientId(null);
+  const created: Record<string, unknown>[] = [];
+  mock.treatmentPlans.create(({ input }) => {
+    created.push(input);
+    const { patientId, ...data } = input;
+    return fake.treatmentPlan({ ...data, patient: { id: patientId } });
+  });
+
   await page.goto(`/administration/patients/${patient.id}/treatment-plan`);
-
   await page.getByRole("textbox", { name: "Beginn" }).fill("2024-01-15");
   await page.getByRole("button", { name: "Speichern" }).click();
 
   await expect(page.getByText("Behandlungsplan gespeichert")).toBeVisible();
+  expect(created[0]).toMatchObject({ patientId: patient.id, startDate: "2024-01-15" });
 });
 ```
+
+- A later call for the same procedure wins over an earlier one. Register a procedure with a path parameter (`invoices.find`, `/invoices/{id}`) **before** the static routes it would also match (`/invoices/patients`), or it claims them.
+- Inputs arrive parsed by the contract (path parameters such as `id` included, numbers as numbers), and outputs are validated, so a wrongly shaped response fails the test.
+- To check what the UI sent, pass a handler and push `input` into an array. When a snackbar from an earlier save may still be showing, wait for the request with `expect.poll(() => created.length)` instead of the message.
+- A request no handler answers gets a 404 and is logged as "Unmocked API call", so a missing handler is easy to spot.
 
 Use `getByRole` with an accessible name as the primary locator. Interactive elements that have no visible label (icon buttons) must carry an `aria-label` so tests can target them without relying on emoji text or DOM structure.
 
 Split tests by operation: `create.spec.ts` for creation flows, `update.spec.ts` for edit/delete flows, `show.spec.ts` for read-only display assertions.
 
-E2e tests require a production build (`npm run build`) and run with `CI=true npm run e2e`. They are separate from the unit/integration suite (`npm run ci`) because they need the dev server and a seeded database.
+E2e tests require a production build (`npm run build`) and run with `CI=true npm run e2e`. The mock listens on the API's default port 4000 and the UI on 3000, so stop local dev servers on those ports first.
 
 ## Form save button placement
 

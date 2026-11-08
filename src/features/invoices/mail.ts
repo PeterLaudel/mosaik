@@ -4,20 +4,10 @@ import * as nodemailer from "nodemailer";
 /** The signed-in account the invoice is sent from. */
 export type MailSender =
   | { transport: "gmail"; email: string; accessToken: () => Promise<string> }
-  // Keeps the mail in memory instead of sending it, for e2e tests
+  // Builds the mail without sending it (MAIL_TRANSPORT=json), e.g. locally without Gmail
   | { transport: "json"; email: string };
 
 const isTestEmail = () => process.env.NODE_ENV === "test";
-
-// With the json transport (e2e) mails stay in memory; e2e reads the last one via testing.ts
-let lastJsonMail: Record<string, unknown> | null = null;
-
-/** Returns the last mail the json transport produced and forgets it. */
-export function takeLastJsonMail(): Record<string, unknown> | null {
-  const mail = lastJsonMail;
-  lastJsonMail = null;
-  return mail;
-}
 
 export default async function mailInvoice(
   therapeut: InvoiceIssuer,
@@ -25,7 +15,7 @@ export default async function mailInvoice(
   sender: MailSender,
 ): Promise<void> {
   const transporter = await createTransport(sender);
-  const info = await transporter.sendMail({
+  await transporter.sendMail({
     from: `${therapeut.name} ${therapeut.surname} <${therapeut.email}>`,
     to: `${invoice.patient.name} ${invoice.patient.surname} <${invoice.patient.billingInfo.email}>`,
     subject: `Ihre Rechnung ${invoice.invoiceNumber}`,
@@ -39,10 +29,6 @@ export default async function mailInvoice(
     ],
   });
 
-  if (transporter.transporter.name === "JSONTransport") {
-    const { message } = info as unknown as { message: string };
-    lastJsonMail = JSON.parse(message) as Record<string, unknown>;
-  }
 }
 
 async function createTransport(sender: MailSender) {

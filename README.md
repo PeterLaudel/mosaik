@@ -23,7 +23,7 @@ npm run api   # API on :4000
 npm run dev   # UI on :3000, in a second terminal
 ```
 
-The repository is an npm workspace: the API lives at the root (`src/`), the Next.js UI in `ui/`, and the oRPC contract package in `packages/contract/` (the UI depends on it and builds it before `dev`, `build` and `typecheck`). `npm run lint` and `npm run typecheck` cover both. E2E tests (`e2e/`) start the API and the built UI (`npm run build` first).
+The repository is an npm workspace: the API lives at the root (`src/`), the Next.js UI in `ui/`, and the oRPC contract package in `packages/contract/` (the UI depends on it and builds it before `dev`, `build` and `typecheck`). `npm run lint` and `npm run typecheck` cover both. The UI's e2e tests (`ui/e2e/`) run the built UI against a mocked API, see below.
 
 Open [http://localhost:3000](http://localhost:3000). The UI is a pure API client: the browser calls `/api/*` on the UI's origin, which Next forwards to the API (`API_URL`, default `http://localhost:4000`), and server components call `API_URL` directly. In development the sign-in redirect is disabled.
 
@@ -44,6 +44,15 @@ Auth is enforced in production only (override with `AUTH_REQUIRED=true|false`). 
 | `API_PUBLIC_URL` | Origin the browser reaches the API on. Behind the UI's `/api` rewrite that is the UI's public origin. Register `<API_PUBLIC_URL>/api/auth/callback/google` as a redirect URI in the Google Cloud console | `http://localhost:4000` |
 | `API_URL` (UI) | Where the Next app reaches the API, for the rewrite and server components | `http://localhost:4000` |
 | `UI_URL` | Trusted origin the browser may be sent back to after sign-in | `http://localhost:3000` |
-| `MAIL_TRANSPORT` | `json` keeps mails in memory instead of sending them (e2e) | Gmail |
+| `MAIL_TRANSPORT` | `json` builds mails without sending them (e.g. locally without Gmail) | Gmail |
+
+### E2E tests
+
+The UI's Playwright tests (`ui/e2e/`) run the production build against a mocked API: MSW handlers built from the contract with `@orpc/msw`, served on the API's port (4000); each test sets up the procedures its flow needs, e.g. `mock.patients.find(patient)`. They need no backend or database.
+
+```sh
+npm run build          # UI production build
+CI=true npm run e2e    # stop local servers on :3000 and :4000 first
+```
 
 See [docs/guidelines.md](docs/guidelines.md) for coding conventions and the checks to run before committing.

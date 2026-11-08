@@ -1,10 +1,16 @@
 import { test, expect } from "../fixtures";
+import { fake, page as resultPage } from "../support/factories";
 
-test("creates a service", async ({ page }) => {
+test("creates a service", async ({ page, mock }) => {
+  mock.services.filter(resultPage([]));
+  const create: Record<string, unknown>[] = [];
+  mock.services.create(({ input }) => {
+    create.push(input);
+    return fake.service(input);
+  });
+
   await page.goto("/administration/services");
-
   await page.getByRole("button", { name: "Leistung anlegen" }).click();
-
   await expect(page.getByRole("heading", { name: "Leistung anlegen" })).toBeVisible();
 
   await page.getByLabel("Kürzel").fill("GOP-1");
@@ -12,8 +18,16 @@ test("creates a service", async ({ page }) => {
   await page.getByLabel("Beschreibung").fill("Test Beschreibung");
   await page.getByLabel("Punkte").fill("200");
 
+  mock.services.filter(resultPage([fake.service({ short: "GOP-1" })]));
   await page.getByRole("button", { name: "Anlegen" }).click();
 
   await expect(page.getByText("Leistung gespeichert")).toBeVisible();
   await expect(page.getByRole("gridcell", { name: "GOP-1" })).toBeVisible();
+  const [body] = create;
+  expect(body).toMatchObject({
+    short: "GOP-1",
+    originalGopNr: "1234",
+    description: "Test Beschreibung",
+    points: 200,
+  });
 });
