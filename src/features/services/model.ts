@@ -1,19 +1,8 @@
-export const factorArray = ["1.0", "1.8", "2.3"] as const;
-export type Factor = typeof factorArray[number];
+import { z } from "zod";
+import { amountSchema, factorSchema, serviceCreateSchema, serviceSchema } from "./contract";
 
-export type Amount = {
-  factor: Factor;
-  price: number;
-};
-
-export interface Service {
-  id: number;
-  short: string;
-  originalGopNr: string;
-  description: string;
-  note?: string;
-  points: number;
-  amounts: Amount[];
-}
-
-export type ServiceCreate = Omit<Service, "id">;
+export const factorArray = factorSchema.options;
+export type Factor = z.infer<typeof factorSchema>;
+export type Amount = z.infer<typeof amountSchema>;
+export type Service = z.infer<typeof serviceSchema>;
+export type ServiceCreate = z.infer<typeof serviceCreateSchema>;

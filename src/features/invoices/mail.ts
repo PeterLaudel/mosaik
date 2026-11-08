@@ -1,6 +1,4 @@
-import { authOptions } from "@/app/api/auth/[...nextauth]/config";
 import { Invoice, InvoiceIssuer } from "./model";
-import { getServerSession } from "next-auth";
 import * as nodemailer from "nodemailer";
 
 const isTestEmail = () => process.env.NODE_ENV === "test";
@@ -43,6 +41,10 @@ async function createTransport() {
     });
   }
 
+  // Loaded lazily: the session only exists inside the Next app, and next-auth cannot be loaded
+  // by the ESM API bundle. Stage 1b moves auth into the API and passes mail credentials in.
+  const { getServerSession } = await import("next-auth");
+  const { authOptions } = await import("@/app/api/auth/[...nextauth]/config");
   const session = await getServerSession(authOptions);
   if (!session) {
     throw new Error("Not authenticated");

@@ -1,4 +1,4 @@
-import { getServicesService } from "@/features/services";
+import { getServicesService } from "@/features/services/legacy";
 import ServiceForm from "../_forms/serviceForm";
 import { updateService } from "./action";
 

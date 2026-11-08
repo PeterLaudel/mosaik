@@ -1,6 +1,6 @@
 "use server";
 
-import { getSessionsService } from "@/features/sessions";
+import { getSessionsService } from "@/features/sessions/legacy";
 import { PseudonymizationCheckResult } from "@/features/sessions/service";
 
 export async function getPseudonymizedTextForSessions(

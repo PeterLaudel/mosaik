@@ -48,7 +48,7 @@ module.exports = defineConfig([
         },
     },
     ...nextCoreWebVitals,
-    globalIgnores(["**/*.d.ts", "playwright-report/**", ".next/**", "**/*.js"]),
+    globalIgnores(["**/*.d.ts", "playwright-report/**", ".next/**", "**/*.js", "dist/**", "packages/*/dist/**"]),
     ...featureBoundaries,
     {
         files: ["src/app/**/*.{ts,tsx}"],
@@ -56,7 +56,21 @@ module.exports = defineConfig([
             "no-restricted-imports": ["error", {
                 patterns: [{
                     regex: "^@/features/[a-z-]+/(repository|selectors?)$",
-                    message: "The app layer talks to a feature through its service (get*Service from @/features/<feature>), not its repository.",
+                    message: "The app layer talks to a feature through its service (get*Service from @/features/<feature>/legacy until the UI moves to the oRPC client), not its repository.",
+                }],
+            }],
+        },
+    },
+    {
+        // Backend composition (app module, worker, contract): a feature is reached only through
+        // its protocol layer — the index (Nest module), its contract, or its outbox handlers.
+        files: ["src/*.ts"],
+        ignores: ["src/**/*.test.ts"],
+        rules: {
+            "no-restricted-imports": ["error", {
+                patterns: [{
+                    regex: "^@/features/[a-z-]+/(?!(contract|outbox)$).+",
+                    message: "A feature only exports its protocol layer: import @/features/<feature> (module), its /contract or its /outbox.",
                 }],
             }],
         },

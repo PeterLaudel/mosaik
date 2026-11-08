@@ -1,6 +1,6 @@
 "use server";
 
-import { getInvoicesService } from "@/features/invoices";
+import { getInvoicesService } from "@/features/invoices/legacy";
 import InvoiceForm from "../_forms/invoiceForm";
 import { createInvoice } from "./action";
 

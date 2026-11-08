@@ -11,4 +11,20 @@ const customJestConfig = {
   moduleNameMapper: { "^@/(.*)$": "<rootDir>/src/$1" },
 };
 
-export default createJestConfig(customJestConfig);
+// NestJS 12 and oRPC 2 ship ESM only; Jest runs CommonJS, so these get transpiled too.
+const esmOnlyPackages = [
+  "@nestjs",
+  "@orpc",
+  "@standard-server",
+  "@oxc-project",
+  "@openapi-spec",
+  "@faker-js",
+];
+const transformIgnorePatterns = [`/node_modules/(?!(${esmOnlyPackages.join("|")})/)`];
+
+const loadNextJestConfig = createJestConfig(customJestConfig);
+
+export default async function jestConfig() {
+  const config = await loadNextJestConfig();
+  return { ...config, transformIgnorePatterns };
+}

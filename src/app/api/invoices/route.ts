@@ -1,5 +1,5 @@
 import { Invoice } from "@/features/invoices/model";
-import { getInvoicesService } from "@/features/invoices";
+import { getInvoicesService } from "@/features/invoices/legacy";
 import { NextRequest, NextResponse } from "next/server";
 
 

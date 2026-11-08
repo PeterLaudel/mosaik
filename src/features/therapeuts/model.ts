@@ -1,19 +1,5 @@
-export interface Therapeut {
-    id: number;
-    title: string;
-    name: string;
-    surname: string;
-    street: string;
-    zip: string;
-    city: string;
-    email: string;
-    phone: string;
-    taxId: string;
-    iban: string;
-    bic: string;
-    bankName: string;
-    website: string;
-    enr: string;
-}
+import { z } from "zod";
+import { therapeutCreateSchema, therapeutSchema } from "./contract";
 
-export type TherapeutCreate = Omit<Therapeut, "id">;
+export type Therapeut = z.infer<typeof therapeutSchema>;
+export type TherapeutCreate = z.infer<typeof therapeutCreateSchema>;

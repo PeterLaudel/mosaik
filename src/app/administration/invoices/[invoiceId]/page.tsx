@@ -1,4 +1,4 @@
-import { getInvoicesService } from "@/features/invoices";
+import { getInvoicesService } from "@/features/invoices/legacy";
 import { InvoiceViewer } from "./invoiceViewer";
 import InvoiceForm from "../_forms/invoiceForm";
 import { updateInvoice } from "./action";

@@ -1,15 +1,7 @@
-import { TreatmentGoal, TreatmentPlan } from "./model";
+import { TreatmentPlan, TreatmentPlanFormData } from "./model";
 import { TreatmentPlansRepository } from "./repository";
 
-export type TreatmentPlanFormData = {
-  startDate: string;
-  endDate: string | null;
-  therapyForm: TreatmentPlan["therapyForm"];
-  phase: TreatmentPlan["phase"];
-  approvedSessions: number | null;
-  notes: string | null;
-  goals: TreatmentGoal[];
-};
+export type { TreatmentPlanFormData } from "./model";
 
 export class TreatmentPlansService {
   constructor(private readonly treatmentPlansRepository: TreatmentPlansRepository) {}

@@ -1,4 +1,4 @@
-import { getPatientsService } from "@/features/patients";
+import { getPatientsService } from "@/features/patients/legacy";
 import { NextRequest, NextResponse } from "next/server";
 
 export const GET = async (req: NextRequest) => {

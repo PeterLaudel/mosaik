@@ -1,4 +1,4 @@
-import { getSessionsService } from "@/features/sessions";
+import { getSessionsService } from "@/features/sessions/legacy";
 import ReportsTab from "./reportsTab";
 
 interface Props {

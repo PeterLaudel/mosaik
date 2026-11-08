@@ -1,10 +1,9 @@
+import { z } from "zod";
+import { pseudonymizationCheckResultSchema } from "./contract";
 import { Session, SessionCreate } from "./model";
 import { SessionsRepository } from "./repository";
 
-export type PseudonymizationCheckResult =
-  | { status: "pending" }
-  | { status: "failed" }
-  | { status: "ready"; text: string };
+export type PseudonymizationCheckResult = z.infer<typeof pseudonymizationCheckResultSchema>;
 
 export class SessionsService {
   constructor(private readonly sessionsRepository: SessionsRepository) {}

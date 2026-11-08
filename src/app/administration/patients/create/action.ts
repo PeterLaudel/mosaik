@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { PatientCreate } from "@/features/patients/model";
-import { getPatientsService } from "@/features/patients";
+import { getPatientsService } from "@/features/patients/legacy";
 
 export default async function createPatient(patient: PatientCreate) {
   const patientsService = await getPatientsService();

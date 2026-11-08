@@ -1,4 +1,7 @@
-export type HomeworkStatus = "open" | "done" | "partial" | "not_done";
+import { z } from "zod";
+import { givenHomeworkSchema, homeworkStatusSchema, reviewHomeworkSchema } from "./contract";
+
+export type HomeworkStatus = z.infer<typeof homeworkStatusSchema>;
 
 export const HOMEWORK_STATUSES: { value: HomeworkStatus; label: string }[] = [
   { value: "open", label: "Offen" },
@@ -7,11 +10,5 @@ export const HOMEWORK_STATUSES: { value: HomeworkStatus; label: string }[] = [
   { value: "not_done", label: "Nicht erledigt" },
 ];
 
-export interface GivenHomework {
-  description: string;
-}
-
-export interface ReviewHomework {
-  description: string;
-  status: HomeworkStatus;
-}
+export type GivenHomework = z.infer<typeof givenHomeworkSchema>;
+export type ReviewHomework = z.infer<typeof reviewHomeworkSchema>;
