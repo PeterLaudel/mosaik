@@ -4,12 +4,22 @@ import { Button } from "@mui/material";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useSnackbar } from "@/contexts/snackbarProvider";
 import { authClient, signInWithGoogle } from "@/lib/auth/client";
 
 export default function Navbar() {
   const { data: session } = authClient.useSession();
   const pathname = usePathname();
   const router = useRouter();
+  const { showErrorMessage } = useSnackbar();
+
+  const onSignIn = async () => {
+    try {
+      await signInWithGoogle(pathname);
+    } catch {
+      showErrorMessage("Anmeldung fehlgeschlagen");
+    }
+  };
 
   const onSignOut = async () => {
     await authClient.signOut();
@@ -43,7 +53,7 @@ export default function Navbar() {
           <Button
             variant="text"
             className="[grid-area:button]"
-            onClick={() => signInWithGoogle(pathname)}
+            onClick={onSignIn}
           >
             Anmelden
           </Button>

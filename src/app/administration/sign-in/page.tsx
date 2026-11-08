@@ -4,6 +4,7 @@ import { Button } from "@mui/material";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 import Section from "@/components/section";
+import { useSnackbar } from "@/contexts/snackbarProvider";
 import { signInWithGoogle } from "@/lib/auth/client";
 
 // Only same-site paths are accepted as a target after sign-in
@@ -16,10 +17,16 @@ function SignIn() {
   const searchParams = useSearchParams();
   const returnTo = safeReturnTo(searchParams.get("returnTo"));
   const [pending, setPending] = useState(false);
+  const { showErrorMessage } = useSnackbar();
 
   const onSignIn = async () => {
     setPending(true);
-    await signInWithGoogle(returnTo);
+    try {
+      await signInWithGoogle(returnTo);
+    } catch {
+      showErrorMessage("Anmeldung fehlgeschlagen");
+      setPending(false);
+    }
   };
 
   return (

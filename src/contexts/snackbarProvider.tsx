@@ -6,6 +6,7 @@ import { createContext, useContext, useState } from "react";
 
 const SnackBarContext = createContext<{
   showSuccessMessage: (message: string) => void;
+  showErrorMessage: (message: string) => void;
 } | null>(null);
 
 export function SnackbarProvider({ children }: { children: React.ReactNode }) {
@@ -19,10 +20,17 @@ export function SnackbarProvider({ children }: { children: React.ReactNode }) {
     setOpen(true);
   };
 
+  const showErrorMessage = (msg: string) => {
+    setMessage(msg);
+    setSeverity("error");
+    setOpen(true);
+  };
+
   return (
     <SnackBarContext.Provider
       value={{
         showSuccessMessage,
+        showErrorMessage,
       }}
     >
       <Snackbar
