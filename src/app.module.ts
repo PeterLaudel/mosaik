@@ -1,4 +1,5 @@
 import { Module } from "@nestjs/common";
+import { AuthModule } from "@/auth";
 import { DatabaseModule } from "@/shared/database/module";
 import { OrpcModule } from "@/shared/orpc/module";
 import { InvoicesModule } from "@/features/invoices";
@@ -12,6 +13,7 @@ import { TreatmentPlansModule } from "@/features/treatment-plans";
   imports: [
     OrpcModule,
     DatabaseModule,
+    AuthModule,
     InvoicesModule,
     PatientsModule,
     ServicesModule,

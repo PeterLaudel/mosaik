@@ -2,7 +2,7 @@ import { pdfOwnerPassword } from "@/environment";
 import { BillableService, Invoice, InvoiceIssuer, InvoicePatient, InvoiceCreate } from "./model";
 import { InvoicesRepository } from "./repository";
 import { encryptPdf } from "./encryptPdf";
-import mailInvoice from "./mail";
+import mailInvoice, { MailSender } from "./mail";
 
 export class InvoicesService {
   constructor(private readonly invoicesRepository: InvoicesRepository) {}
@@ -50,7 +50,7 @@ export class InvoicesService {
     return this.invoicesRepository.update({ ...invoice, status });
   }
 
-  async sendByEmail(invoiceId: number): Promise<Invoice> {
+  async sendByEmail(invoiceId: number, sender: MailSender): Promise<Invoice> {
     const invoice = await this.invoicesRepository.find(invoiceId);
     const issuer = await this.invoicesRepository.findIssuer();
     if (!issuer) throw new Error("Cannot send an invoice before the therapeut is set up");
@@ -61,7 +61,7 @@ export class InvoicesService {
       pdfOwnerPassword(),
     );
 
-    await mailInvoice(issuer, { ...invoice, base64Pdf });
+    await mailInvoice(issuer, { ...invoice, base64Pdf }, sender);
 
     return this.invoicesRepository.update({ ...invoice, status: "sent" });
   }

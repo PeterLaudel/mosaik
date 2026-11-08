@@ -14,6 +14,8 @@ jest.mock("./encryptPdf", () => ({ encryptPdf: jest.fn() }));
 const mockedMailInvoice = mailInvoice as jest.MockedFunction<typeof mailInvoice>;
 const mockedEncryptPdf = encryptPdf as jest.MockedFunction<typeof encryptPdf>;
 
+const sender = { transport: "json", email: "max.mustermann@example.com" } as const;
+
 describe("InvoicesService", () => {
   let invoicesService: InvoicesService;
 
@@ -48,7 +50,7 @@ describe("InvoicesService", () => {
       const { invoice, patient } = await createInvoice("pending");
       mockedEncryptPdf.mockResolvedValue("encrypted-pdf");
 
-      const sent = await invoicesService.sendByEmail(invoice.id);
+      const sent = await invoicesService.sendByEmail(invoice.id, sender);
 
       expect(mockedEncryptPdf).toHaveBeenCalledWith(
         invoice.base64Pdf,
@@ -58,6 +60,7 @@ describe("InvoicesService", () => {
       expect(mockedMailInvoice).toHaveBeenCalledWith(
         expect.objectContaining({ id: therapeut.id }),
         expect.objectContaining({ id: invoice.id, base64Pdf: "encrypted-pdf" }),
+        sender,
       );
       expect(sent.status).toBe("sent");
       // The stored PDF stays unencrypted; only the mailed copy is protected.
@@ -70,7 +73,7 @@ describe("InvoicesService", () => {
       mockedEncryptPdf.mockResolvedValue("encrypted-pdf");
       mockedMailInvoice.mockRejectedValue(new Error("SMTP down"));
 
-      await expect(invoicesService.sendByEmail(invoice.id)).rejects.toThrow("SMTP down");
+      await expect(invoicesService.sendByEmail(invoice.id, sender)).rejects.toThrow("SMTP down");
 
       const row = await getDb()
         .selectFrom("invoices")

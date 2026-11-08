@@ -19,6 +19,16 @@ const esmOnlyPackages = [
   "@oxc-project",
   "@openapi-spec",
   "@faker-js",
+  "jose",
+  "better-auth",
+  "@better-auth",
+  "better-call",
+  "@better-fetch",
+  "nanostores",
+  "defu",
+  "@noble",
+  "rou3",
+  "uncrypto",
 ];
 const transformIgnorePatterns = [`/node_modules/(?!(${esmOnlyPackages.join("|")})/)`];
 

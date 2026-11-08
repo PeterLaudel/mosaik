@@ -13,6 +13,10 @@ export interface Database {
   treatment_goals: TreatmentGoalsTable;
   homework: HomeworkTable;
   outbox: OutboxTable;
+  auth_users: AuthUsersTable;
+  auth_sessions: AuthSessionsTable;
+  auth_accounts: AuthAccountsTable;
+  auth_verifications: AuthVerificationsTable;
 }
 
 interface PatientTable {
@@ -153,4 +157,54 @@ export interface OutboxTable {
   payload: string;
   processedAt: string | null;
   createdAt: Generated<string>;
+}
+
+// Owned by better-auth (src/auth/auth.ts); app code reads them through better-auth, not directly.
+// sqlite stores dates as text and booleans as integers, postgres as timestamptz and boolean.
+type AuthDate = Date | string;
+
+export interface AuthUsersTable {
+  id: string;
+  name: string;
+  email: string;
+  emailVerified: boolean | number;
+  image: string | null;
+  createdAt: AuthDate;
+  updatedAt: AuthDate;
+}
+
+export interface AuthSessionsTable {
+  id: string;
+  expiresAt: AuthDate;
+  token: string;
+  createdAt: AuthDate;
+  updatedAt: AuthDate;
+  ipAddress: string | null;
+  userAgent: string | null;
+  userId: string;
+}
+
+export interface AuthAccountsTable {
+  id: string;
+  accountId: string;
+  providerId: string;
+  userId: string;
+  accessToken: string | null;
+  refreshToken: string | null;
+  idToken: string | null;
+  accessTokenExpiresAt: AuthDate | null;
+  refreshTokenExpiresAt: AuthDate | null;
+  scope: string | null;
+  password: string | null;
+  createdAt: AuthDate;
+  updatedAt: AuthDate;
+}
+
+export interface AuthVerificationsTable {
+  id: string;
+  identifier: string;
+  value: string;
+  expiresAt: AuthDate;
+  createdAt: AuthDate;
+  updatedAt: AuthDate;
 }

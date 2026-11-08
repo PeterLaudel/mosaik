@@ -104,7 +104,7 @@ export class InvoicesRepository {
     // For SQLite: get max id and add 1
     const result = await this.database
       .selectFrom("invoices")
-      .select(this.database.fn.max("id").as("max_id"))
+      .select((eb) => eb.fn.max("invoices.id").as("max_id"))
       .executeTakeFirst();
 
     const next_id = (result?.max_id ?? 0) + 1;
