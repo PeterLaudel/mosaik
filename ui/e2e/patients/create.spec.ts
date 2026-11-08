@@ -1,16 +1,13 @@
 import { test, expect } from "../fixtures";
-import { api } from "../support/mockApi";
 import { fake, page as resultPage } from "../support/factories";
 
 test("creates a patient", async ({ page, mock }) => {
-  mock.use(api.patients.filter.handler(() => resultPage([])));
+  mock.patients.filter(resultPage([]));
   const create: Record<string, unknown>[] = [];
-  mock.use(
-    api.patients.create.handler(({ input }) => {
-      create.push(input);
-      return fake.patient(input);
-    }),
-  );
+  mock.patients.create(({ input }) => {
+    create.push(input);
+    return fake.patient(input);
+  });
 
   await page.goto("/administration/patients");
   await page.getByRole("button", { name: "Patienten anlegen" }).click();
@@ -28,7 +25,7 @@ test("creates a patient", async ({ page, mock }) => {
   await page.getByRole("textbox", { name: "Stadt" }).first().fill("Musterstadt");
 
   const created = fake.patient({ name: "Max", surname: "Mustermann" });
-  mock.use(api.patients.filter.handler(() => resultPage([created])));
+  mock.patients.filter(resultPage([created]));
   await page.getByRole("button", { name: "Anlegen" }).click();
 
   await expect(page.getByText("Patient wurde angelegt")).toBeVisible();

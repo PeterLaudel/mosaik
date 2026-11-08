@@ -1,22 +1,19 @@
 import type { Mock } from "../fixtures";
 import { test, expect } from "../fixtures";
-import { api } from "../support/mockApi";
 import { fake } from "../support/factories";
 
 const CREATED_PLAN_ID = 501;
 
 function patientWithoutPlan(mock: Mock) {
   const patient = fake.patient();
-  mock.use(api.patients.find.handler(() => patient));
-  mock.use(api.treatmentPlans.findByPatientId.handler(() => null));
+  mock.patients.find(patient);
+  mock.treatmentPlans.findByPatientId(null);
   const create: Record<string, unknown>[] = [];
-  mock.use(
-    api.treatmentPlans.create.handler(({ input }) => {
-      create.push(input);
-      const { patientId, ...data } = input;
-      return fake.treatmentPlan({ ...data, id: CREATED_PLAN_ID, patient: { id: patientId } });
-    }),
-  );
+  mock.treatmentPlans.create(({ input }) => {
+    create.push(input);
+    const { patientId, ...data } = input;
+    return fake.treatmentPlan({ ...data, id: CREATED_PLAN_ID, patient: { id: patientId } });
+  });
   return { patient, create };
 }
 
@@ -61,12 +58,10 @@ test("adds a goal and saves the plan", async ({ page, mock }) => {
 test("second save updates instead of creating a duplicate", async ({ page, mock }) => {
   const { patient, create } = patientWithoutPlan(mock);
   const update: Record<string, unknown>[] = [];
-  mock.use(
-    api.treatmentPlans.update.handler(({ input }) => {
-      update.push(input);
-      return fake.treatmentPlan({ ...input, patient: { id: patient.id } });
-    }),
-  );
+  mock.treatmentPlans.update(({ input }) => {
+    update.push(input);
+    return fake.treatmentPlan({ ...input, patient: { id: patient.id } });
+  });
 
   await page.goto(`/administration/patients/${patient.id}/treatment-plan`);
   await page.getByRole("textbox", { name: "Beginn" }).fill("2024-01-15");

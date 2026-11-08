@@ -1,17 +1,14 @@
 import { test, expect } from "../fixtures";
-import { api } from "../support/mockApi";
 import { fake, page as resultPage } from "../support/factories";
 
 test("asks the API for finalized sessions only and lists them", async ({ page, mock }) => {
   const patient = fake.patient();
-  mock.use(api.patients.find.handler(() => patient));
+  mock.patients.find(patient);
   const filter: Record<string, unknown>[] = [];
-  mock.use(
-    api.sessions.filter.handler(({ input }) => {
-      filter.push(input);
-      return resultPage([fake.session({ status: "final", sessionNumber: 2 })]);
-    }),
-  );
+  mock.sessions.filter(({ input }) => {
+    filter.push(input);
+    return resultPage([fake.session({ status: "final", sessionNumber: 2 })]);
+  });
 
   await page.goto(`/administration/patients/${patient.id}/reports`);
 
@@ -24,8 +21,8 @@ test("asks the API for finalized sessions only and lists them", async ({ page, m
 
 test("enables report generation after selecting all sessions via the header checkbox", async ({ page, mock }) => {
   const patient = fake.patient();
-  mock.use(api.patients.find.handler(() => patient));
-  mock.use(api.sessions.filter.handler(() => resultPage(Array.from({ length: 2 }, () => fake.session({ status: "final" })))));
+  mock.patients.find(patient);
+  mock.sessions.filter(resultPage(Array.from({ length: 2 }, () => fake.session({ status: "final" }))));
 
   await page.goto(`/administration/patients/${patient.id}/reports`);
   await page.getByRole("checkbox", { name: "Select all rows" }).click();

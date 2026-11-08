@@ -1,7 +1,6 @@
 import type { Session } from "@peterlaudel/mosaik-contract";
 import type { Mock } from "../fixtures";
 import { test, expect } from "../fixtures";
-import { api } from "../support/mockApi";
 import { fake, page as resultPage } from "../support/factories";
 
 const DRAFT_ID = 42;
@@ -9,27 +8,23 @@ const DRAFT_ID = 42;
 function patientWithoutSessions(mock: Mock) {
   const patient = fake.patient({ name: "Anna", surname: "Müller" });
   const draft = fake.session({ id: DRAFT_ID, sessionNumber: 1, status: "draft" });
-  mock.use(api.patients.find.handler(() => patient));
-  mock.use(api.sessions.filter.handler(() => resultPage([])));
-  mock.use(api.sessions.findOpenSession.handler(() => null));
+  mock.patients.find(patient);
+  mock.sessions.filter(resultPage([]));
+  mock.sessions.findOpenSession(null);
   const createDraft: Record<string, unknown>[] = [];
-  mock.use(
-    api.sessions.createDraft.handler(({ input }) => {
-      createDraft.push(input);
-      return draft;
-    }),
-  );
+  mock.sessions.createDraft(({ input }) => {
+    createDraft.push(input);
+    return draft;
+  });
   // The session page after the redirect
-  mock.use(api.sessions.find.handler(() => draft));
-  mock.use(api.treatmentPlans.findByPatientId.handler(() => null));
-  mock.use(api.sessions.findPreviousSession.handler(() => null));
+  mock.sessions.find(draft);
+  mock.treatmentPlans.findByPatientId(null);
+  mock.sessions.findPreviousSession(null);
   const update: Record<string, unknown>[] = [];
-  mock.use(
-    api.sessions.update.handler(({ input }) => {
-      update.push(input);
-      return { ...draft, ...input } as Session;
-    }),
-  );
+  mock.sessions.update(({ input }) => {
+    update.push(input);
+    return { ...draft, ...input } as Session;
+  });
   return { patient, createDraft, update };
 }
 

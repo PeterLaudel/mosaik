@@ -1,5 +1,4 @@
 import { test, expect } from "../fixtures";
-import { api } from "../support/mockApi";
 import { fake, page as resultPage } from "../support/factories";
 
 // A minimal valid PDF for the form's preview
@@ -14,23 +13,21 @@ test("creates an invoice", async ({ page, mock }) => {
       { factor: "2.3", price: 23 },
     ],
   });
-  mock.use(api.invoices.filter.handler(() => resultPage([])));
+  mock.invoices.filter(resultPage([]));
   // After saving, the UI opens the new invoice. Registered first: later handlers win, and
   // /invoices/{id} would otherwise also claim /invoices/patients and the other static routes
   const created = fake.invoice({ invoiceNumber: "20241010001", patient });
-  mock.use(api.invoices.find.handler(() => created));
-  mock.use(api.invoices.findPatients.handler(() => [patient]));
-  mock.use(api.invoices.findBillableServices.handler(() => [service]));
-  mock.use(api.invoices.generateInvoiceNumber.handler(() => "20241010001"));
-  mock.use(api.invoices.findIssuer.handler(() => fake.issuer()));
-  mock.use(api.invoices.generatePdf.handler(() => new File([PDF], "20241010001.pdf", { type: "application/pdf" })));
+  mock.invoices.find(created);
+  mock.invoices.findPatients([patient]);
+  mock.invoices.findBillableServices([service]);
+  mock.invoices.generateInvoiceNumber("20241010001");
+  mock.invoices.findIssuer(fake.issuer());
+  mock.invoices.generatePdf(new File([PDF], "20241010001.pdf", { type: "application/pdf" }));
   const create: Record<string, unknown>[] = [];
-  mock.use(
-    api.invoices.create.handler(({ input }) => {
-      create.push(input);
-      return { ...created, ...input };
-    }),
-  );
+  mock.invoices.create(({ input }) => {
+    create.push(input);
+    return { ...created, ...input };
+  });
 
   await page.goto("/administration/invoices");
   await page.getByRole("button", { name: "Rechnung anlegen" }).click();

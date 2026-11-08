@@ -28,25 +28,22 @@ CI=true npm run e2e # playwright e2e tests (CI=true disables retries and the bro
 
 Every user-facing feature must have Playwright e2e tests in `ui/e2e/<feature>/`. They run the built UI against a mock API instead of the real one: MSW handlers built from the contract with `@orpc/msw` (`api` in `ui/e2e/support/mockApi.ts`), served over HTTP on the API's port. oRPC parses and validates them like the real API. What the API does with a request (persistence, filtering, mail content) is covered by the API's own tests.
 
-Each test registers the handlers its flow needs with `mock.use(...)` from the `test` fixture in `ui/e2e/fixtures.ts`, and builds response data with `fake.*` from `ui/e2e/support/factories.ts`. Handlers are typed by the contract, so they stop compiling when it changes.
+Each test sets up the procedures its flow needs through `mock` from the `test` fixture in `ui/e2e/fixtures.ts`: `mock.<feature>.<procedure>(value)` or `mock.<feature>.<procedure>(({ input }) => value)`. Build response data with `fake.*` from `ui/e2e/support/factories.ts`. Everything is typed by the contract, so it stops compiling when the contract changes.
 
 ```ts
 import { test, expect } from "../fixtures";
-import { api } from "../support/mockApi";
 import { fake } from "../support/factories";
 
 test("creates a treatment plan and shows success message", async ({ page, mock }) => {
   const patient = fake.patient();
-  mock.use(api.patients.find.handler(() => patient));
-  mock.use(api.treatmentPlans.findByPatientId.handler(() => null));
+  mock.patients.find(patient);
+  mock.treatmentPlans.findByPatientId(null);
   const created: Record<string, unknown>[] = [];
-  mock.use(
-    api.treatmentPlans.create.handler(({ input }) => {
-      created.push(input);
-      const { patientId, ...data } = input;
-      return fake.treatmentPlan({ ...data, patient: { id: patientId } });
-    }),
-  );
+  mock.treatmentPlans.create(({ input }) => {
+    created.push(input);
+    const { patientId, ...data } = input;
+    return fake.treatmentPlan({ ...data, patient: { id: patientId } });
+  });
 
   await page.goto(`/administration/patients/${patient.id}/treatment-plan`);
   await page.getByRole("textbox", { name: "Beginn" }).fill("2024-01-15");
@@ -57,9 +54,9 @@ test("creates a treatment plan and shows success message", async ({ page, mock }
 });
 ```
 
-- A later `mock.use` wins over an earlier one. Register a procedure with a path parameter (`invoices.find`, `/invoices/{id}`) **before** the static routes it would also match (`/invoices/patients`), or it claims them.
+- A later call for the same procedure wins over an earlier one. Register a procedure with a path parameter (`invoices.find`, `/invoices/{id}`) **before** the static routes it would also match (`/invoices/patients`), or it claims them.
 - Inputs arrive parsed by the contract (path parameters such as `id` included, numbers as numbers), and outputs are validated, so a wrongly shaped response fails the test.
-- To check what the UI sent, push `input` into an array in the handler. When a snackbar from an earlier save may still be showing, wait for the request with `expect.poll(() => created.length)` instead of the message.
+- To check what the UI sent, pass a handler and push `input` into an array. When a snackbar from an earlier save may still be showing, wait for the request with `expect.poll(() => created.length)` instead of the message.
 - A request no handler answers gets a 404 and is logged as "Unmocked API call", so a missing handler is easy to spot.
 
 Use `getByRole` with an accessible name as the primary locator. Interactive elements that have no visible label (icon buttons) must carry an `aria-label` so tests can target them without relying on emoji text or DOM structure.

@@ -1,16 +1,13 @@
 import { test, expect } from "../fixtures";
-import { api } from "../support/mockApi";
 import { fake } from "../support/factories";
 
 test("saves a therapeut with empty form", async ({ page, mock }) => {
-  mock.use(api.therapeuts.all.handler(() => []));
+  mock.therapeuts.all([]);
   const create: Record<string, unknown>[] = [];
-  mock.use(
-    api.therapeuts.create.handler(({ input }) => {
-      create.push(input);
-      return fake.therapeut(input);
-    }),
-  );
+  mock.therapeuts.create(({ input }) => {
+    create.push(input);
+    return fake.therapeut(input);
+  });
 
   await page.goto("/administration/therapeuts");
   await expect(page.getByRole("heading", { name: "Therapeut" })).toBeVisible();
@@ -44,14 +41,12 @@ test("saves a therapeut with empty form", async ({ page, mock }) => {
 
 test("updates a therapeut with filled form", async ({ page, mock }) => {
   const therapeut = fake.therapeut();
-  mock.use(api.therapeuts.all.handler(() => [therapeut]));
+  mock.therapeuts.all([therapeut]);
   const update: Record<string, unknown>[] = [];
-  mock.use(
-    api.therapeuts.update.handler(({ input }) => {
-      update.push(input);
-      return { ...therapeut, ...input };
-    }),
-  );
+  mock.therapeuts.update(({ input }) => {
+    update.push(input);
+    return { ...therapeut, ...input };
+  });
 
   await page.goto("/administration/therapeuts");
   await expect(page.getByRole("heading", { name: "Therapeut" })).toBeVisible();
@@ -82,14 +77,12 @@ test("updates a therapeut with filled form", async ({ page, mock }) => {
 });
 
 test("shows validation errors on invalid form", async ({ page, mock }) => {
-  mock.use(api.therapeuts.all.handler(() => []));
+  mock.therapeuts.all([]);
   const create: Record<string, unknown>[] = [];
-  mock.use(
-    api.therapeuts.create.handler(({ input }) => {
-      create.push(input);
-      return fake.therapeut(input);
-    }),
-  );
+  mock.therapeuts.create(({ input }) => {
+    create.push(input);
+    return fake.therapeut(input);
+  });
 
   await page.goto("/administration/therapeuts");
   await expect(page.getByRole("heading", { name: "Therapeut" })).toBeVisible();

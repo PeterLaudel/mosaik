@@ -1,21 +1,18 @@
 import type { PseudonymizationCheckResult } from "@peterlaudel/mosaik-contract";
 import type { Mock } from "../fixtures";
 import { test, expect } from "../fixtures";
-import { api } from "../support/mockApi";
 import { fake, page as resultPage } from "../support/factories";
 
 function reportFor(mock: Mock, result: PseudonymizationCheckResult) {
   const patient = fake.patient();
   const session = fake.session({ status: "final" });
-  mock.use(api.patients.find.handler(() => patient));
-  mock.use(api.sessions.filter.handler(() => resultPage([session])));
+  mock.patients.find(patient);
+  mock.sessions.filter(resultPage([session]));
   const check: Record<string, unknown>[] = [];
-  mock.use(
-    api.sessions.getPseudonymizedText.handler(({ input }) => {
-      check.push(input);
-      return result;
-    }),
-  );
+  mock.sessions.getPseudonymizedText(({ input }) => {
+    check.push(input);
+    return result;
+  });
   return { url: `/administration/patients/${patient.id}/reports`, session, check };
 }
 

@@ -1,15 +1,14 @@
 import type { Session } from "@peterlaudel/mosaik-contract";
 import type { Mock } from "../fixtures";
 import { test, expect } from "../fixtures";
-import { api } from "../support/mockApi";
 import { fake } from "../support/factories";
 
 function sessionPage(mock: Mock, overrides: Partial<Session>) {
   const session = fake.session(overrides);
-  mock.use(api.sessions.find.handler(() => session));
-  mock.use(api.treatmentPlans.findByPatientId.handler(() => null));
-  mock.use(api.sessions.findPreviousSession.handler(() => null));
-  mock.use(api.sessions.update.handler(({ input }) => ({ ...session, ...input }) as Session));
+  mock.sessions.find(session);
+  mock.treatmentPlans.findByPatientId(null);
+  mock.sessions.findPreviousSession(null);
+  mock.sessions.update(({ input }) => ({ ...session, ...input }) as Session);
   return `/administration/patients/${session.patient.id}/sessions/${session.id}`;
 }
 

@@ -1,21 +1,18 @@
 import type { TreatmentPlan } from "@peterlaudel/mosaik-contract";
 import type { Mock } from "../fixtures";
 import { test, expect } from "../fixtures";
-import { api } from "../support/mockApi";
 import { fake } from "../support/factories";
 
 function patientWithPlan(mock: Mock, overrides: Partial<TreatmentPlan>) {
   const patient = fake.patient();
   const plan = fake.treatmentPlan({ ...overrides, patient: { id: patient.id } });
-  mock.use(api.patients.find.handler(() => patient));
-  mock.use(api.treatmentPlans.findByPatientId.handler(() => plan));
+  mock.patients.find(patient);
+  mock.treatmentPlans.findByPatientId(plan);
   const update: Record<string, unknown>[] = [];
-  mock.use(
-    api.treatmentPlans.update.handler(({ input }) => {
-      update.push(input);
-      return { ...plan, ...input };
-    }),
-  );
+  mock.treatmentPlans.update(({ input }) => {
+    update.push(input);
+    return { ...plan, ...input };
+  });
   return { patient, plan, update };
 }
 

@@ -1,6 +1,5 @@
 import type { Session } from "@peterlaudel/mosaik-contract";
 import { test, expect } from "../fixtures";
-import { api } from "../support/mockApi";
 import { fake, page as resultPage } from "../support/factories";
 
 test("shows the previous session's homework for review in a new session", async ({ page, mock }) => {
@@ -12,13 +11,13 @@ test("shows the previous session's homework for review in a new session", async 
     status: "draft",
     reviewHomework: [{ description: "Entspannungsübungen täglich", status: "open" }],
   });
-  mock.use(api.patients.find.handler(() => patient));
-  mock.use(api.sessions.filter.handler(() => resultPage([])));
-  mock.use(api.sessions.findOpenSession.handler(() => null));
-  mock.use(api.sessions.createDraft.handler(() => draft));
-  mock.use(api.sessions.find.handler(() => draft));
-  mock.use(api.treatmentPlans.findByPatientId.handler(() => null));
-  mock.use(api.sessions.findPreviousSession.handler(() => null));
+  mock.patients.find(patient);
+  mock.sessions.filter(resultPage([]));
+  mock.sessions.findOpenSession(null);
+  mock.sessions.createDraft(draft);
+  mock.sessions.find(draft);
+  mock.treatmentPlans.findByPatientId(null);
+  mock.sessions.findPreviousSession(null);
 
   await page.goto(`/administration/patients/${patient.id}/sessions`);
   await page.getByRole("button", { name: "Sitzung starten" }).click();
@@ -34,16 +33,14 @@ test("updates homework review status via toggle and it autosaves", async ({ page
     status: "draft",
     reviewHomework: [{ description: "Tagebuch führen", status: "open" }],
   });
-  mock.use(api.sessions.find.handler(() => session));
-  mock.use(api.treatmentPlans.findByPatientId.handler(() => null));
-  mock.use(api.sessions.findPreviousSession.handler(() => null));
+  mock.sessions.find(session);
+  mock.treatmentPlans.findByPatientId(null);
+  mock.sessions.findPreviousSession(null);
   const update: Record<string, unknown>[] = [];
-  mock.use(
-    api.sessions.update.handler(({ input }) => {
-      update.push(input);
-      return { ...session, ...input } as Session;
-    }),
-  );
+  mock.sessions.update(({ input }) => {
+    update.push(input);
+    return { ...session, ...input } as Session;
+  });
 
   await page.goto(`/administration/patients/${session.patient.id}/sessions/${session.id}`);
   await expect(page.getByText("Hausaufgaben — Rückschau")).toBeVisible();
