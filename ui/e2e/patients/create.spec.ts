@@ -1,9 +1,16 @@
 import { test, expect } from "../fixtures";
+import { api } from "../support/mockApi";
 import { fake, page as resultPage } from "../support/factories";
 
-test("creates a patient", async ({ page, mockApi }) => {
-  await mockApi.patients.filter.returns(resultPage([]));
-  const create = await mockApi.patients.create.returns((input) => fake.patient(input));
+test("creates a patient", async ({ page, mock }) => {
+  mock.use(api.patients.filter.handler(() => resultPage([])));
+  const create: Record<string, unknown>[] = [];
+  mock.use(
+    api.patients.create.handler(({ input }) => {
+      create.push(input);
+      return fake.patient(input);
+    }),
+  );
 
   await page.goto("/administration/patients");
   await page.getByRole("button", { name: "Patienten anlegen" }).click();
@@ -21,13 +28,13 @@ test("creates a patient", async ({ page, mockApi }) => {
   await page.getByRole("textbox", { name: "Stadt" }).first().fill("Musterstadt");
 
   const created = fake.patient({ name: "Max", surname: "Mustermann" });
-  await mockApi.patients.filter.returns(resultPage([created]));
+  mock.use(api.patients.filter.handler(() => resultPage([created])));
   await page.getByRole("button", { name: "Anlegen" }).click();
 
   await expect(page.getByText("Patient wurde angelegt")).toBeVisible();
   await expect(page.getByRole("gridcell", { name: "Max", exact: true })).toBeVisible();
   await expect(page.getByRole("gridcell", { name: "Mustermann", exact: true })).toBeVisible();
-  const [body] = await create.calls();
+  const [body] = create;
   expect(body).toMatchObject({
     name: "Max",
     surname: "Mustermann",

@@ -1,19 +1,26 @@
 import type { PseudonymizationCheckResult } from "@peterlaudel/mosaik-contract";
-import type { MockApi } from "../support/mockApi";
+import type { Mock } from "../fixtures";
 import { test, expect } from "../fixtures";
+import { api } from "../support/mockApi";
 import { fake, page as resultPage } from "../support/factories";
 
-async function reportFor(mockApi: MockApi, result: PseudonymizationCheckResult) {
+function reportFor(mock: Mock, result: PseudonymizationCheckResult) {
   const patient = fake.patient();
   const session = fake.session({ status: "final" });
-  await mockApi.patients.find.returns(patient);
-  await mockApi.sessions.filter.returns(resultPage([session]));
-  const check = await mockApi.sessions.getPseudonymizedText.returns(result);
+  mock.use(api.patients.find.handler(() => patient));
+  mock.use(api.sessions.filter.handler(() => resultPage([session])));
+  const check: Record<string, unknown>[] = [];
+  mock.use(
+    api.sessions.getPseudonymizedText.handler(({ input }) => {
+      check.push(input);
+      return result;
+    }),
+  );
   return { url: `/administration/patients/${patient.id}/reports`, session, check };
 }
 
-test("shows the pseudonymized text and confirms once pseudonymization is done", async ({ page, mockApi }) => {
-  const { url, session, check } = await reportFor(mockApi, {
+test("shows the pseudonymized text and confirms once pseudonymization is done", async ({ page, mock }) => {
+  const { url, session, check } = reportFor(mock, {
     status: "ready",
     text: "Pseudonymisierte Notiz\n\nPseudonymisierter Plan",
   });
@@ -28,12 +35,12 @@ test("shows the pseudonymized text and confirms once pseudonymization is done", 
   await expect(textarea).toHaveValue(/Pseudonymisierter Plan/);
   await page.getByRole("button", { name: "Bestätigen & Bericht erstellen" }).click();
   await expect(page.getByText("Datenschutz-Prüfung bestätigt")).toBeVisible();
-  const [body] = await check.calls();
+  const [body] = check;
   expect(body).toMatchObject({ sessionIds: [session.id] });
 });
 
-test("disables confirmation while pseudonymization is still pending", async ({ page, mockApi }) => {
-  const { url } = await reportFor(mockApi, { status: "pending" });
+test("disables confirmation while pseudonymization is still pending", async ({ page, mock }) => {
+  const { url } = reportFor(mock, { status: "pending" });
 
   await page.goto(url);
   await page.getByRole("checkbox", { name: "Select row" }).click();
@@ -43,8 +50,8 @@ test("disables confirmation while pseudonymization is still pending", async ({ p
   await expect(page.getByRole("button", { name: "Bestätigen & Bericht erstellen" })).toBeDisabled();
 });
 
-test("shows a warning and disables confirmation when pseudonymization failed", async ({ page, mockApi }) => {
-  const { url } = await reportFor(mockApi, { status: "failed" });
+test("shows a warning and disables confirmation when pseudonymization failed", async ({ page, mock }) => {
+  const { url } = reportFor(mock, { status: "failed" });
 
   await page.goto(url);
   await page.getByRole("checkbox", { name: "Select row" }).click();

@@ -26,20 +26,26 @@ CI=true npm run e2e # playwright e2e tests (CI=true disables retries and the bro
 
 ## E2e tests cover every UI feature with Playwright, against a mocked API
 
-Every user-facing feature must have Playwright e2e tests in `ui/e2e/<feature>/`. They run the built UI against a mock API instead of the real one: oRPC serves the contract (same routes and validation as the API), and each procedure answers with what the test stubbed and records what the UI sent. What the API does with them (persistence, filtering, mail content) is covered by the API's own tests.
+Every user-facing feature must have Playwright e2e tests in `ui/e2e/<feature>/`. They run the built UI against a mock API instead of the real one: MSW handlers built from the contract with `@orpc/msw` (`api` in `ui/e2e/support/mockApi.ts`), served over HTTP on the API's port. oRPC parses and validates them like the real API. What the API does with a request (persistence, filtering, mail content) is covered by the API's own tests.
 
-Use the `test` fixture from `ui/e2e/fixtures.ts`. Its `mockApi` is typed by the oRPC contract, so stubs stop compiling when the contract changes. Build response data with `fake.*` from `ui/e2e/support/factories.ts`.
+Each test registers the handlers its flow needs with `mock.use(...)` from the `test` fixture in `ui/e2e/fixtures.ts`, and builds response data with `fake.*` from `ui/e2e/support/factories.ts`. Handlers are typed by the contract, so they stop compiling when it changes.
 
 ```ts
 import { test, expect } from "../fixtures";
+import { api } from "../support/mockApi";
 import { fake } from "../support/factories";
 
-test("creates a treatment plan and shows success message", async ({ page, mockApi }) => {
+test("creates a treatment plan and shows success message", async ({ page, mock }) => {
   const patient = fake.patient();
-  await mockApi.patients.find.returns(patient);
-  await mockApi.treatmentPlans.findByPatientId.returns(null);
-  const create = await mockApi.treatmentPlans.create.returns(({ patientId, ...data }) =>
-    fake.treatmentPlan({ ...data, patient: { id: patientId } }),
+  mock.use(api.patients.find.handler(() => patient));
+  mock.use(api.treatmentPlans.findByPatientId.handler(() => null));
+  const created: Record<string, unknown>[] = [];
+  mock.use(
+    api.treatmentPlans.create.handler(({ input }) => {
+      created.push(input);
+      const { patientId, ...data } = input;
+      return fake.treatmentPlan({ ...data, patient: { id: patientId } });
+    }),
   );
 
   await page.goto(`/administration/patients/${patient.id}/treatment-plan`);
@@ -47,14 +53,14 @@ test("creates a treatment plan and shows success message", async ({ page, mockAp
   await page.getByRole("button", { name: "Speichern" }).click();
 
   await expect(page.getByText("Behandlungsplan gespeichert")).toBeVisible();
-  const [body] = await create.calls();
-  expect(body).toMatchObject({ patientId: patient.id, startDate: "2024-01-15" });
+  expect(created[0]).toMatchObject({ patientId: patient.id, startDate: "2024-01-15" });
 });
 ```
 
-- `returns(output)` answers every call; `returns(input => output)` computes the reply from the input (e.g. to echo an update). A later stub replaces an earlier one. Outputs are validated against the contract, so a stub with the wrong shape fails the test.
-- `calls()` returns the inputs the UI sent, parsed by the contract (path parameters such as `id` included, numbers as numbers). When a snackbar from an earlier save may still be showing, wait for the request with `expect.poll` instead of the message.
-- A procedure no test stubbed fails and is logged as "Unmocked API call", so a missing stub is easy to spot.
+- A later `mock.use` wins over an earlier one. Register a procedure with a path parameter (`invoices.find`, `/invoices/{id}`) **before** the static routes it would also match (`/invoices/patients`), or it claims them.
+- Inputs arrive parsed by the contract (path parameters such as `id` included, numbers as numbers), and outputs are validated, so a wrongly shaped response fails the test.
+- To check what the UI sent, push `input` into an array in the handler. When a snackbar from an earlier save may still be showing, wait for the request with `expect.poll(() => created.length)` instead of the message.
+- A request no handler answers gets a 404 and is logged as "Unmocked API call", so a missing handler is easy to spot.
 
 Use `getByRole` with an accessible name as the primary locator. Interactive elements that have no visible label (icon buttons) must carry an `aria-label` so tests can target them without relying on emoji text or DOM structure.
 

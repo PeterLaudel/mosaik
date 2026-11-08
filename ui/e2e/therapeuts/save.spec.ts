@@ -1,9 +1,16 @@
 import { test, expect } from "../fixtures";
+import { api } from "../support/mockApi";
 import { fake } from "../support/factories";
 
-test("saves a therapeut with empty form", async ({ page, mockApi }) => {
-  await mockApi.therapeuts.all.returns([]);
-  const create = await mockApi.therapeuts.create.returns((input) => fake.therapeut(input));
+test("saves a therapeut with empty form", async ({ page, mock }) => {
+  mock.use(api.therapeuts.all.handler(() => []));
+  const create: Record<string, unknown>[] = [];
+  mock.use(
+    api.therapeuts.create.handler(({ input }) => {
+      create.push(input);
+      return fake.therapeut(input);
+    }),
+  );
 
   await page.goto("/administration/therapeuts");
   await expect(page.getByRole("heading", { name: "Therapeut" })).toBeVisible();
@@ -25,7 +32,7 @@ test("saves a therapeut with empty form", async ({ page, mockApi }) => {
   await page.getByRole("button", { name: "Speichern" }).click();
 
   await expect(page.getByText("Therapeut gespeichert")).toBeVisible();
-  const [body] = await create.calls();
+  const [body] = create;
   expect(body).toMatchObject({
     title: "Dr.",
     name: "New Vorname",
@@ -35,10 +42,16 @@ test("saves a therapeut with empty form", async ({ page, mockApi }) => {
   });
 });
 
-test("updates a therapeut with filled form", async ({ page, mockApi }) => {
+test("updates a therapeut with filled form", async ({ page, mock }) => {
   const therapeut = fake.therapeut();
-  await mockApi.therapeuts.all.returns([therapeut]);
-  const update = await mockApi.therapeuts.update.returns((input) => ({ ...therapeut, ...input }));
+  mock.use(api.therapeuts.all.handler(() => [therapeut]));
+  const update: Record<string, unknown>[] = [];
+  mock.use(
+    api.therapeuts.update.handler(({ input }) => {
+      update.push(input);
+      return { ...therapeut, ...input };
+    }),
+  );
 
   await page.goto("/administration/therapeuts");
   await expect(page.getByRole("heading", { name: "Therapeut" })).toBeVisible();
@@ -64,13 +77,19 @@ test("updates a therapeut with filled form", async ({ page, mockApi }) => {
   await page.getByRole("button", { name: "Speichern" }).click();
 
   await expect(page.getByText("Therapeut gespeichert")).toBeVisible();
-  const [body] = await update.calls();
+  const [body] = update;
   expect(body).toMatchObject({ id: therapeut.id, surname: "new name", name: "new vorname", zip: "54321" });
 });
 
-test("shows validation errors on invalid form", async ({ page, mockApi }) => {
-  await mockApi.therapeuts.all.returns([]);
-  const create = await mockApi.therapeuts.create.returns((input) => fake.therapeut(input));
+test("shows validation errors on invalid form", async ({ page, mock }) => {
+  mock.use(api.therapeuts.all.handler(() => []));
+  const create: Record<string, unknown>[] = [];
+  mock.use(
+    api.therapeuts.create.handler(({ input }) => {
+      create.push(input);
+      return fake.therapeut(input);
+    }),
+  );
 
   await page.goto("/administration/therapeuts");
   await expect(page.getByRole("heading", { name: "Therapeut" })).toBeVisible();
@@ -91,5 +110,5 @@ test("shows validation errors on invalid form", async ({ page, mockApi }) => {
   await expect(page.getByText("BIC ist erforderlich")).toBeVisible();
   await expect(page.getByText("Webseite ist ungültig")).toBeVisible();
   await expect(page.getByText("ENR ist erforderlich")).toBeVisible();
-  expect(await create.calls()).toHaveLength(0);
+  expect(create).toHaveLength(0);
 });

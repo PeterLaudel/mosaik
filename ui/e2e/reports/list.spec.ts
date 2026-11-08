@@ -1,11 +1,16 @@
 import { test, expect } from "../fixtures";
+import { api } from "../support/mockApi";
 import { fake, page as resultPage } from "../support/factories";
 
-test("asks the API for finalized sessions only and lists them", async ({ page, mockApi }) => {
+test("asks the API for finalized sessions only and lists them", async ({ page, mock }) => {
   const patient = fake.patient();
-  await mockApi.patients.find.returns(patient);
-  const filter = await mockApi.sessions.filter.returns(
-    resultPage([fake.session({ status: "final", sessionNumber: 2 })]),
+  mock.use(api.patients.find.handler(() => patient));
+  const filter: Record<string, unknown>[] = [];
+  mock.use(
+    api.sessions.filter.handler(({ input }) => {
+      filter.push(input);
+      return resultPage([fake.session({ status: "final", sessionNumber: 2 })]);
+    }),
   );
 
   await page.goto(`/administration/patients/${patient.id}/reports`);
@@ -13,14 +18,14 @@ test("asks the API for finalized sessions only and lists them", async ({ page, m
   // Header row plus the single finalized session row
   await expect(page.getByRole("row")).toHaveCount(2);
   await expect(page.getByRole("gridcell", { name: "2", exact: true })).toBeVisible();
-  const [query] = await filter.calls();
+  const [query] = filter;
   expect(query).toMatchObject({ patientId: patient.id, status: "final" });
 });
 
-test("enables report generation after selecting all sessions via the header checkbox", async ({ page, mockApi }) => {
+test("enables report generation after selecting all sessions via the header checkbox", async ({ page, mock }) => {
   const patient = fake.patient();
-  await mockApi.patients.find.returns(patient);
-  await mockApi.sessions.filter.returns(resultPage(Array.from({ length: 2 }, () => fake.session({ status: "final" }))));
+  mock.use(api.patients.find.handler(() => patient));
+  mock.use(api.sessions.filter.handler(() => resultPage(Array.from({ length: 2 }, () => fake.session({ status: "final" })))));
 
   await page.goto(`/administration/patients/${patient.id}/reports`);
   await page.getByRole("checkbox", { name: "Select all rows" }).click();

@@ -1,9 +1,16 @@
 import { test, expect } from "../fixtures";
+import { api } from "../support/mockApi";
 import { fake, page as resultPage } from "../support/factories";
 
-test("creates a service", async ({ page, mockApi }) => {
-  await mockApi.services.filter.returns(resultPage([]));
-  const create = await mockApi.services.create.returns((input) => fake.service(input));
+test("creates a service", async ({ page, mock }) => {
+  mock.use(api.services.filter.handler(() => resultPage([])));
+  const create: Record<string, unknown>[] = [];
+  mock.use(
+    api.services.create.handler(({ input }) => {
+      create.push(input);
+      return fake.service(input);
+    }),
+  );
 
   await page.goto("/administration/services");
   await page.getByRole("button", { name: "Leistung anlegen" }).click();
@@ -14,12 +21,12 @@ test("creates a service", async ({ page, mockApi }) => {
   await page.getByLabel("Beschreibung").fill("Test Beschreibung");
   await page.getByLabel("Punkte").fill("200");
 
-  await mockApi.services.filter.returns(resultPage([fake.service({ short: "GOP-1" })]));
+  mock.use(api.services.filter.handler(() => resultPage([fake.service({ short: "GOP-1" })])));
   await page.getByRole("button", { name: "Anlegen" }).click();
 
   await expect(page.getByText("Leistung gespeichert")).toBeVisible();
   await expect(page.getByRole("gridcell", { name: "GOP-1" })).toBeVisible();
-  const [body] = await create.calls();
+  const [body] = create;
   expect(body).toMatchObject({
     short: "GOP-1",
     originalGopNr: "1234",

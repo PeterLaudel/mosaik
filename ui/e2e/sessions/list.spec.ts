@@ -1,17 +1,24 @@
 import { test, expect } from "../fixtures";
+import { api } from "../support/mockApi";
 import { fake, page as resultPage } from "../support/factories";
 
-test("lists sessions for a patient", async ({ page, mockApi }) => {
+test("lists sessions for a patient", async ({ page, mock }) => {
   const patient = fake.patient();
-  await mockApi.patients.find.returns(patient);
-  await mockApi.sessions.findOpenSession.returns(null);
-  const filter = await mockApi.sessions.filter.returns(resultPage(Array.from({ length: 2 }, () => fake.session({ status: "draft" }))));
+  mock.use(api.patients.find.handler(() => patient));
+  mock.use(api.sessions.findOpenSession.handler(() => null));
+  const filter: Record<string, unknown>[] = [];
+  mock.use(
+    api.sessions.filter.handler(({ input }) => {
+      filter.push(input);
+      return resultPage(Array.from({ length: 2 }, () => fake.session({ status: "draft" })));
+    }),
+  );
 
   await page.goto(`/administration/patients/${patient.id}/sessions`);
 
   // Two data rows plus the header row
   await expect(page.getByRole("row")).toHaveCount(3);
   await expect(page.getByText("Entwurf").first()).toBeVisible();
-  const [query] = await filter.calls();
+  const [query] = filter;
   expect(query).toMatchObject({ patientId: patient.id });
 });

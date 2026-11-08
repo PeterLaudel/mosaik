@@ -37,7 +37,9 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",
+    "@orpc/msw": "2.0.0-beta.49",
     "@playwright/test": "^1.65.0",
+    "@remix-run/node-fetch-server": "^1.0.0",
     "@tailwindcss/postcss": "^4.2.2",
     "@types/node": "^25",
     "@types/react": "19.2.14",
@@ -45,6 +47,7 @@
     "eslint": "^9.39.4",
     "eslint-config-next": "16.2.4",
     "globals": "^17.5.0",
+    "msw": "^3.0.4",
     "postcss": "^8",
     "tailwindcss": "^4.2.2",
     "typescript": "^6",

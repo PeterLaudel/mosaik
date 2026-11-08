@@ -1,10 +1,11 @@
 import { test, expect } from "../fixtures";
+import { api } from "../support/mockApi";
 import { fake, page as resultPage } from "../support/factories";
 
 // A minimal valid PDF for the form's preview
 const PDF = Buffer.from("%PDF-1.1\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n2 0 obj<</Type/Pages/Kids[]/Count 0>>endobj\ntrailer<</Root 1 0 R>>\n%%EOF\n");
 
-test("creates an invoice", async ({ page, mockApi }) => {
+test("creates an invoice", async ({ page, mock }) => {
   const patient = fake.invoicePatient({ name: "Max", surname: "Mustermann" });
   const service = fake.billableService({
     short: "Super short",
@@ -13,16 +14,23 @@ test("creates an invoice", async ({ page, mockApi }) => {
       { factor: "2.3", price: 23 },
     ],
   });
-  await mockApi.invoices.filter.returns(resultPage([]));
-  await mockApi.invoices.findPatients.returns([patient]);
-  await mockApi.invoices.findBillableServices.returns([service]);
-  await mockApi.invoices.generateInvoiceNumber.returns("20241010001");
-  await mockApi.invoices.findIssuer.returns(fake.issuer());
-  await mockApi.invoices.generatePdf.returns(new File([PDF], "20241010001.pdf", { type: "application/pdf" }));
+  mock.use(api.invoices.filter.handler(() => resultPage([])));
+  // After saving, the UI opens the new invoice. Registered first: later handlers win, and
+  // /invoices/{id} would otherwise also claim /invoices/patients and the other static routes
   const created = fake.invoice({ invoiceNumber: "20241010001", patient });
-  const create = await mockApi.invoices.create.returns((input) => ({ ...created, ...input }));
-  // After saving, the UI opens the new invoice
-  await mockApi.invoices.find.returns(created);
+  mock.use(api.invoices.find.handler(() => created));
+  mock.use(api.invoices.findPatients.handler(() => [patient]));
+  mock.use(api.invoices.findBillableServices.handler(() => [service]));
+  mock.use(api.invoices.generateInvoiceNumber.handler(() => "20241010001"));
+  mock.use(api.invoices.findIssuer.handler(() => fake.issuer()));
+  mock.use(api.invoices.generatePdf.handler(() => new File([PDF], "20241010001.pdf", { type: "application/pdf" })));
+  const create: Record<string, unknown>[] = [];
+  mock.use(
+    api.invoices.create.handler(({ input }) => {
+      create.push(input);
+      return { ...created, ...input };
+    }),
+  );
 
   await page.goto("/administration/invoices");
   await page.getByRole("button", { name: "Rechnung anlegen" }).click();
@@ -44,7 +52,7 @@ test("creates an invoice", async ({ page, mockApi }) => {
   await page.getByRole("button", { name: "Anlegen" }).click();
 
   await expect(page.getByRole("alert").getByText("Rechnung wurde gespeichert")).toBeVisible();
-  const [body] = await create.calls();
+  const [body] = create;
   expect(body).toMatchObject({
     invoiceNumber: "20241010001",
     status: "pending",

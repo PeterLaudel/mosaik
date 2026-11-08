@@ -1,39 +1,52 @@
 import type { Session } from "@peterlaudel/mosaik-contract";
-import type { MockApi } from "../support/mockApi";
+import type { Mock } from "../fixtures";
 import { test, expect } from "../fixtures";
+import { api } from "../support/mockApi";
 import { fake, page as resultPage } from "../support/factories";
 
 const DRAFT_ID = 42;
 
-async function patientWithoutSessions(mockApi: MockApi) {
+function patientWithoutSessions(mock: Mock) {
   const patient = fake.patient({ name: "Anna", surname: "Müller" });
   const draft = fake.session({ id: DRAFT_ID, sessionNumber: 1, status: "draft" });
-  await mockApi.patients.find.returns(patient);
-  await mockApi.sessions.filter.returns(resultPage([]));
-  await mockApi.sessions.findOpenSession.returns(null);
-  const createDraft = await mockApi.sessions.createDraft.returns(draft);
+  mock.use(api.patients.find.handler(() => patient));
+  mock.use(api.sessions.filter.handler(() => resultPage([])));
+  mock.use(api.sessions.findOpenSession.handler(() => null));
+  const createDraft: Record<string, unknown>[] = [];
+  mock.use(
+    api.sessions.createDraft.handler(({ input }) => {
+      createDraft.push(input);
+      return draft;
+    }),
+  );
   // The session page after the redirect
-  await mockApi.sessions.find.returns(draft);
-  await mockApi.treatmentPlans.findByPatientId.returns(null);
-  await mockApi.sessions.findPreviousSession.returns(null);
-  const update = await mockApi.sessions.update.returns(({ id, ...data }) => ({ ...draft, ...data, id: id ?? DRAFT_ID }) as Session);
+  mock.use(api.sessions.find.handler(() => draft));
+  mock.use(api.treatmentPlans.findByPatientId.handler(() => null));
+  mock.use(api.sessions.findPreviousSession.handler(() => null));
+  const update: Record<string, unknown>[] = [];
+  mock.use(
+    api.sessions.update.handler(({ input }) => {
+      update.push(input);
+      return { ...draft, ...input } as Session;
+    }),
+  );
   return { patient, createDraft, update };
 }
 
-test("creates a session from the patient sessions page", async ({ page, mockApi }) => {
-  const { patient, createDraft } = await patientWithoutSessions(mockApi);
+test("creates a session from the patient sessions page", async ({ page, mock }) => {
+  const { patient, createDraft } = patientWithoutSessions(mock);
 
   await page.goto(`/administration/patients/${patient.id}/sessions`);
   await page.getByRole("button", { name: "Sitzung starten" }).click();
 
   await expect(page).toHaveURL(`/administration/patients/${patient.id}/sessions/${DRAFT_ID}`, { timeout: 5000 });
   await expect(page.getByRole("spinbutton", { name: "Sitzungsnummer" })).toHaveValue("1");
-  const [body] = await createDraft.calls();
+  const [body] = createDraft;
   expect(body).toMatchObject({ patientId: patient.id });
 });
 
-test("creates and finalizes a session", async ({ page, mockApi }) => {
-  const { patient, update } = await patientWithoutSessions(mockApi);
+test("creates and finalizes a session", async ({ page, mock }) => {
+  const { patient, update } = patientWithoutSessions(mock);
 
   await page.goto(`/administration/patients/${patient.id}/sessions`);
   await page.getByRole("button", { name: "Sitzung starten" }).click();
@@ -44,10 +57,7 @@ test("creates and finalizes a session", async ({ page, mockApi }) => {
   await page.getByRole("button", { name: "Abschließen" }).click();
 
   await expect(page.getByRole("button", { name: "Abschließen" })).toBeDisabled();
-  await expect
-    .poll(async () => (await update.calls()).some((call) => call.status === "final"))
-    .toBe(true);
-  const calls = await update.calls();
-  const final = calls.find((call) => call.status === "final");
+  await expect.poll(() => update.some((call) => call.status === "final")).toBe(true);
+  const final = update.find((call) => call.status === "final");
   expect(final).toMatchObject({ id: DRAFT_ID, riskLevel: "none", clinicalNotes: "Erste Sitzung." });
 });
