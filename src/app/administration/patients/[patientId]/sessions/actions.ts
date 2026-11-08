@@ -1,6 +1,6 @@
 "use server";
 
-import { getSessionsService } from "@/features/sessions";
+import { getSessionsService } from "@/features/sessions/legacy";
 import { Session, SessionCreate } from "@/features/sessions/model";
 
 export async function createSession(patientId: number): Promise<Session> {

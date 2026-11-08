@@ -1,26 +1,7 @@
-export interface Address {
-  street: string;
-  city: string;
-  zip: string;
-}
+import { z } from "zod";
+import { addressSchema, billingInfoSchema, patientCreateSchema, patientSchema } from "./contract";
 
-export interface BillingInfo {
-  name: string;
-  surname: string;
-  email: string;
-  address: Address;
-}
-
-export interface Patient {
-  id: number;
-  name: string;
-  surname: string;
-  email: string;
-  birthdate: string;
-  address: Address;
-  diagnosis: string | null;
-  billingInfo: BillingInfo;
-  invoicePassword: string | null;
-}
-
-export type PatientCreate = Omit<Patient, "id">;
+export type Address = z.infer<typeof addressSchema>;
+export type BillingInfo = z.infer<typeof billingInfoSchema>;
+export type Patient = z.infer<typeof patientSchema>;
+export type PatientCreate = z.infer<typeof patientCreateSchema>;

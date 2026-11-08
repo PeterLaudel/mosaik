@@ -1,4 +1,4 @@
-import { getPatientsService } from "@/features/patients";
+import { getPatientsService } from "@/features/patients/legacy";
 import PatientForm from "../../_forms/patientForm";
 import { updatePatient } from "../action";
 

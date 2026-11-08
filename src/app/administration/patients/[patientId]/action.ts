@@ -1,7 +1,7 @@
 "use server";
 
 import { PatientCreate } from "@/features/patients/model";
-import { getPatientsService } from "@/features/patients";
+import { getPatientsService } from "@/features/patients/legacy";
 import { revalidatePath } from "next/cache";
 
 export async function updatePatient(id: number, patient: PatientCreate) {

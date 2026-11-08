@@ -3,7 +3,7 @@ import {
   HydrationBoundary,
   QueryClient,
 } from "@tanstack/react-query";
-import { getServicesService } from "@/features/services";
+import { getServicesService } from "@/features/services/legacy";
 import { servicesQueryKey } from "@/features/services/queries";
 import ServiceList from "./servicesList";
 

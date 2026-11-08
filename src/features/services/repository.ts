@@ -2,12 +2,19 @@ import { type Database } from "@/initialize";
 import { Amount, Service, ServiceCreate } from "./model";
 import { serviceSelector } from "./selector";
 
+// The note column is nullable, but the model has no null: a service without a note omits it.
+function toService(row: Service): Service {
+  if (row.note != null) return row;
+  const { note, ...service } = row;
+  return service;
+}
 
 export default class ServicesRepository {
   constructor(private readonly database: Database) {}
 
   public async all(): Promise<Service[]> {
-    return await serviceSelector(this.database).$castTo<Service>().execute();
+    const rows = await serviceSelector(this.database).$castTo<Service>().execute();
+    return rows.map(toService);
   }
 
   public async filter({
@@ -21,14 +28,15 @@ export default class ServicesRepository {
       serviceSelector(this.database).$castTo<Service>().limit(pageSize).offset(page * pageSize).execute(),
       this.database.selectFrom("services").select(this.database.fn.countAll<number>().as("total")).executeTakeFirstOrThrow(),
     ]);
-    return { rows, total: Number(countResult.total) };
+    return { rows: rows.map(toService), total: Number(countResult.total) };
   }
 
   public async find(serviceId: number): Promise<Service> {
-    return await serviceSelector(this.database)
+    const row = await serviceSelector(this.database)
       .where("id", "=", serviceId)
       .$castTo<Service>()
       .executeTakeFirstOrThrow();
+    return toService(row);
   }
 
   public async create(service: ServiceCreate): Promise<Service> {
@@ -57,11 +65,12 @@ export default class ServicesRepository {
     });
   }
 
-  private findIn(database: Database, id: number): Promise<Service> {
-    return serviceSelector(database)
+  private async findIn(database: Database, id: number): Promise<Service> {
+    const row = await serviceSelector(database)
       .where("id", "=", id)
       .$castTo<Service>()
       .executeTakeFirstOrThrow();
+    return toService(row);
   }
 
   private async replaceAmounts(

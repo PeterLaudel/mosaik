@@ -1,5 +1,5 @@
-import { getSessionsService } from "@/features/sessions";
-import { getTreatmentPlansService } from "@/features/treatment-plans";
+import { getSessionsService } from "@/features/sessions/legacy";
+import { getTreatmentPlansService } from "@/features/treatment-plans/legacy";
 import SessionFormShell from "../_forms/sessionFormShell";
 
 interface Props {

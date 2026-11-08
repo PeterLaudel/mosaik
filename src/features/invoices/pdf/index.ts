@@ -1,5 +1,6 @@
 /* eslint-disable no-param-reassign */
-import { InvoiceIssuer, InvoicePatient, InvoicePosition } from "../model";
+import { z } from "zod";
+import { createPdfParamsSchema } from "../contract";
 import PDFDocument from "pdfkit";
 import logoBuffer from "./logo";
 import { generateSepaQrBase64PngBuffer } from "./generateSepaQrBase64Png";
@@ -7,17 +8,7 @@ import blobStream from "blob-stream";
 import { createZugferdXml } from "./zugferd";
 import dayjs from "dayjs";
 
-export interface CreatePdfParams {
-  patient?: InvoicePatient;
-  therapeut: InvoiceIssuer;
-  invoiceNumber: string;
-  invoiceDate?: string;
-  positions: InvoicePosition[];
-  invoiceAmount: number;
-  options?: {
-    invoicePassword?: string;
-  };
-}
+export type CreatePdfParams = z.infer<typeof createPdfParamsSchema>;
 
 /** PDF points from millimetres (DIN / Fensterbrief layout). */
 function mm(n: number) {

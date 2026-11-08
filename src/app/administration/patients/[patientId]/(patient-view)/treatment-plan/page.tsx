@@ -1,4 +1,4 @@
-import { getTreatmentPlansService } from "@/features/treatment-plans";
+import { getTreatmentPlansService } from "@/features/treatment-plans/legacy";
 import TreatmentPlanShell from "../../treatment-plan/treatmentPlanShell";
 
 interface Props {

@@ -1,27 +1,20 @@
+import { z } from "zod";
+import {
+  goalStatusSchema,
+  therapyFormSchema,
+  treatmentGoalSchema,
+  treatmentPhaseSchema,
+  treatmentPlanFormDataSchema,
+  treatmentPlanPatientSchema,
+  treatmentPlanSchema,
+} from "./contract";
 
-export type TherapyForm =
-  | "Einzeltherapie"
-  | "Gruppentherapie"
-  | "Probatorik";
+export type TherapyForm = z.infer<typeof therapyFormSchema>;
+export type TreatmentPhase = z.infer<typeof treatmentPhaseSchema>;
+export type GoalStatus = z.infer<typeof goalStatusSchema>;
 
-export type TreatmentPhase =
-  | "Diagnostik"
-  | "Therapiephase"
-  | "Abschluss";
-
-export type GoalStatus = "active" | "achieved" | "abandoned";
-
-export const THERAPY_FORMS: TherapyForm[] = [
-  "Einzeltherapie",
-  "Gruppentherapie",
-  "Probatorik",
-];
-
-export const TREATMENT_PHASES: TreatmentPhase[] = [
-  "Diagnostik",
-  "Therapiephase",
-  "Abschluss",
-];
+export const THERAPY_FORMS: TherapyForm[] = therapyFormSchema.options;
+export const TREATMENT_PHASES: TreatmentPhase[] = treatmentPhaseSchema.options;
 
 export const GOAL_STATUSES: { value: GoalStatus; label: string }[] = [
   { value: "active", label: "Aktiv" },
@@ -29,31 +22,10 @@ export const GOAL_STATUSES: { value: GoalStatus; label: string }[] = [
   { value: "abandoned", label: "Aufgegeben" },
 ];
 
-export interface TreatmentGoal {
-  description: string;
-  status: GoalStatus;
-  priority: number;
-}
-
-// A treatment plan only needs to know which patient it belongs to; pages that show patient
-// details read them through the patients feature.
-export interface TreatmentPlanPatient {
-  id: number;
-}
-
-export interface TreatmentPlan {
-  id: number;
-  patient: TreatmentPlanPatient;
-  therapeutId: number | null;
-  startDate: string;
-  endDate: string | null;
-  therapyForm: TherapyForm;
-  phase: TreatmentPhase;
-  approvedSessions: number | null;
-  notes: string | null;
-  createdAt: string;
-  goals: TreatmentGoal[];
-}
+export type TreatmentGoal = z.infer<typeof treatmentGoalSchema>;
+export type TreatmentPlanPatient = z.infer<typeof treatmentPlanPatientSchema>;
+export type TreatmentPlan = z.infer<typeof treatmentPlanSchema>;
+export type TreatmentPlanFormData = z.infer<typeof treatmentPlanFormDataSchema>;
 
 export type TreatmentPlanCreate = Omit<TreatmentPlan, "id" | "createdAt">;
 export type TreatmentPlanUpdate = TreatmentPlanCreate & { id: number };

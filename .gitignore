@@ -56,3 +56,6 @@ server.js
 /src/**/*.js
 
 /src-tauri/binary/mosaik-*
+# contract package build output
+/packages/contract/dist
+/dist

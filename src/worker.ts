@@ -1,28 +1,27 @@
 import { getDb } from "@/initialize";
-import { OutboxRepository, OutboxEvent } from "@/shared/outbox/repository";
-import { pseudonymizeSession } from "@/features/sessions/pseudonymization/pseudonymizer";
+import { OutboxRepository } from "@/shared/outbox/repository";
+import { OutboxHandler } from "@/shared/outbox/handler";
+import { sessionFinalizedHandler } from "@/features/sessions/outbox";
 
 const POLL_INTERVAL_MS = 2000;
 
-async function handleEvent(event: OutboxEvent): Promise<void> {
-  switch (event.eventType) {
-    case "session.finalized": {
-      const { sessionId } = event.payload as { sessionId: number };
-      return pseudonymizeSession(sessionId);
-    }
-  }
-}
+const HANDLERS: OutboxHandler[] = [sessionFinalizedHandler];
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-export async function pollOutbox(outboxRepository: OutboxRepository): Promise<void> {
+export async function pollOutbox(
+  outboxRepository: OutboxRepository,
+  handlers: OutboxHandler[] = HANDLERS,
+): Promise<void> {
   const events = await outboxRepository.fetchUnprocessed();
 
   for (const event of events) {
     try {
-      await handleEvent(event);
+      const handler = handlers.find((candidate) => candidate.eventType === event.eventType);
+      if (!handler) throw new Error(`No outbox handler for ${event.eventType}`);
+      await handler.handle(event.payload);
       await outboxRepository.markProcessed(event);
     } catch (error) {
       console.error(`Failed to process outbox event ${event.id} (${event.eventType})`, error);
