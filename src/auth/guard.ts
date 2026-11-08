@@ -5,11 +5,13 @@ import {
   Injectable,
   UnauthorizedException,
 } from "@nestjs/common";
+import { Reflector } from "@nestjs/core";
 import { fromNodeHeaders } from "better-auth/node";
 import type { Request } from "express";
 import { authRequired } from "@/environment";
 import { RequestAuth } from "@/shared/orpc/context";
 import { AUTH, type Auth } from "./auth";
+import { IS_PUBLIC } from "./public";
 
 export type AuthenticatedRequest = Request & { auth?: RequestAuth };
 
@@ -20,7 +22,10 @@ export type AuthenticatedRequest = Request & { auth?: RequestAuth };
  */
 @Injectable()
 export class AuthGuard implements CanActivate {
-  constructor(@Inject(AUTH) private readonly auth: Auth) {}
+  constructor(
+    @Inject(AUTH) private readonly auth: Auth,
+    @Inject(Reflector) private readonly reflector: Reflector,
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
@@ -36,7 +41,9 @@ export class AuthGuard implements CanActivate {
       return true;
     }
 
-    if (!authRequired()) return true;
+    const targets = [context.getHandler(), context.getClass()];
+    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC, targets);
+    if (isPublic || !authRequired()) return true;
     throw new UnauthorizedException();
   }
 

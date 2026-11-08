@@ -1,5 +1,7 @@
 import { Module } from "@nestjs/common";
 import { AuthModule } from "@/auth";
+import { e2eTesting } from "@/environment";
+import { TestingModule } from "@/testing/module";
 import { DatabaseModule } from "@/shared/database/module";
 import { OrpcModule } from "@/shared/orpc/module";
 import { InvoicesModule } from "@/features/invoices";
@@ -20,6 +22,8 @@ import { TreatmentPlansModule } from "@/features/treatment-plans";
     SessionsModule,
     TherapeutsModule,
     TreatmentPlansModule,
+    // Seeding/reset/sign-in for e2e; see src/testing
+    ...(e2eTesting() ? [TestingModule] : []),
   ],
 })
 export class AppModule {}

@@ -1,8 +1,5 @@
-import { therapeutFactory } from "factories/therapeuts";
-import { serviceFactory } from "factories/services";
-import { serviceAmountFactory } from "factories/serviceAmounts";
+import { therapeutFactory, serviceFactory, serviceAmountFactory, patientFactory } from "../factories";
 import { test, expect } from "../fixtures";
-import { patientFactory } from "factories/patients";
 
 test("createas an invoice", async ({ page }) => {
   await therapeutFactory.create({});

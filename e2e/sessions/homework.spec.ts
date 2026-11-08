@@ -1,6 +1,4 @@
-import { patientFactory } from "factories/patients";
-import { sessionFactory } from "factories/sessions";
-import { homeworkFactory } from "factories/homework";
+import { patientFactory, sessionFactory, homeworkFactory } from "../factories";
 import { test, expect } from "../fixtures";
 
 test("assigns homework in a session and it appears for review in the next session", async ({ page }) => {

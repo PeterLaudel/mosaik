@@ -72,3 +72,13 @@ export function uiUrl(): string {
 export function mailTransport(): "gmail" | "json" {
   return process.env.MAIL_TRANSPORT === "json" ? "json" : "gmail";
 }
+
+/** Mounts the test-only API (/api/testing): seeding, reset and sign-in for e2e. Never set this in a deployment. */
+export function e2eTesting(): boolean {
+  return process.env.E2E_TESTING === "true";
+}
+
+/** Runs pending database migrations when the API starts (containers that bring their own database). */
+export function migrateOnStart(): boolean {
+  return process.env.MIGRATE_ON_START === "true";
+}

@@ -1,5 +1,4 @@
-import { sessionFactory } from "factories/sessions";
-import { patientFactory } from "factories/patients";
+import { sessionFactory, patientFactory } from "../factories";
 import { test, expect } from "../fixtures";
 
 test("only lists finalized sessions as report candidates", async ({ page }) => {

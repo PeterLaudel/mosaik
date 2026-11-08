@@ -18,6 +18,7 @@ import * as m0016 from "../../migrations/0016_add_treatment_plans";
 import * as m0017 from "../../migrations/0017_add_homework";
 import * as m0018 from "../../migrations/0018_alter_sessions_add_pseudonymization";
 import * as m0019 from "../../migrations/0019_add_outbox";
+import * as m0020 from "../../migrations/0020_add_auth_tables";
 
 const migrations: Record<string, Migration> = {
   "0001_add_patients_table": m0001,
@@ -39,6 +40,7 @@ const migrations: Record<string, Migration> = {
   "0017_add_homework": m0017,
   "0018_alter_sessions_add_pseudonymization": m0018,
   "0019_add_outbox": m0019,
+  "0020_add_auth_tables": m0020,
 };
 
 export const migrationProvider: MigrationProvider = {

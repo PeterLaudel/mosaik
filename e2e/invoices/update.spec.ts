@@ -1,8 +1,5 @@
-import { invoiceFactory } from "factories/invoices";
+import { invoiceFactory, patientFactory, patientInvoiceFactory, therapeutFactory } from "../factories";
 import { test, expect } from "../fixtures";
-import { patientFactory } from "factories/patients";
-import { patientInvoiceFactory } from "factories/patientInvoices";
-import { therapeutFactory } from "factories/therapeuts";
 
 test("sents an invoice email", async ({ page }) => {
   const therapeut = await therapeutFactory.create();
