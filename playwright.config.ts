@@ -42,6 +42,7 @@ export default defineConfig({
   ],
 
     // The UI only talks to the API, so both run: the API (built from src/main.ts) and the Next app
+  // in ui/ (built beforehand with `npm run build`)
   webServer: [
     {
       command: "npm run api:build && npm run api:start",
@@ -49,7 +50,7 @@ export default defineConfig({
       reuseExistingServer: !process.env.CI,
     },
     {
-      command: "npm run start",
+      command: "npm run start -w ui",
       url: "http://localhost:3000",
       reuseExistingServer: !process.env.CI,
     },

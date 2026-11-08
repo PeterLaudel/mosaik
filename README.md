@@ -23,6 +23,8 @@ npm run api   # API on :4000
 npm run dev   # UI on :3000, in a second terminal
 ```
 
+The repository is an npm workspace: the API lives at the root (`src/`), the Next.js UI in `ui/`, and the oRPC contract package in `packages/contract/` (the UI depends on it and builds it before `dev`, `build` and `typecheck`). `npm run lint` and `npm run typecheck` cover both. E2E tests (`e2e/`) start the API and the built UI (`npm run build` first).
+
 Open [http://localhost:3000](http://localhost:3000). The UI is a pure API client: the browser calls `/api/*` on the UI's origin, which Next forwards to the API (`API_URL`, default `http://localhost:4000`), and server components call `API_URL` directly. In development the sign-in redirect is disabled.
 
 The database dialect is chosen with `DATABASE_DIALECT` (`sqlite` or `postgres`), see `.env.development`.
@@ -45,7 +47,3 @@ Auth is enforced in production only (override with `AUTH_REQUIRED=true|false`). 
 | `MAIL_TRANSPORT` | `json` keeps mails in memory instead of sending them (e2e) | Gmail |
 
 See [docs/guidelines.md](docs/guidelines.md) for coding conventions and the checks to run before committing.
-
-## Desktop app
-
-`npx tauri build` runs `build.sh`, which bundles the Next.js server with `pkg` as a Tauri sidecar. The installed app keeps its database and `.env` in `~/Library/Application Support/psychotherapie-seliger`. That folder name predates the rename and is kept so existing installations keep their data.

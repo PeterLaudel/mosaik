@@ -1,5 +1,5 @@
 # Ignore common folders that we do not need
-.next
+**/.next
 .idea
 .github
 .vscode
