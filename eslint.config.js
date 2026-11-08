@@ -2,12 +2,11 @@ const { defineConfig, globalIgnores } = require("eslint/config");
 const js = require("@eslint/js");
 const globals = require("globals");
 const tseslint = require("typescript-eslint");
-const nextCoreWebVitals = require("eslint-config-next/core-web-vitals");
 const fs = require("fs");
 const path = require("path");
 
 // Features share data (the database), not code: a feature may not import another feature.
-// The app layer (pages, actions, routes) is where features are composed.
+// The app module composes them; the UI (ui/) has its own config and reaches them only via the API.
 const features = fs
     .readdirSync(path.join(__dirname, "src/features"), { withFileTypes: true })
     .filter((entry) => entry.isDirectory())
@@ -47,22 +46,8 @@ module.exports = defineConfig([
             "no-param-reassign": ["error", { props: true }],
         },
     },
-    ...nextCoreWebVitals,
-    globalIgnores(["**/*.d.ts", "playwright-report/**", ".next/**", "**/*.js", "dist/**", "packages/*/dist/**"]),
+    globalIgnores(["**/*.d.ts", "playwright-report/**", ".next/**", "**/*.js", "dist/**", "packages/*/dist/**", "ui/**"]),
     ...featureBoundaries,
-    {
-        // The UI is an API client: it may use the published contract (@/contract) and nothing
-        // else from the backend, so it can move to its own repository unchanged.
-        files: ["src/{app,components,contexts,lib}/**/*.{ts,tsx}", "src/proxy.ts"],
-        rules: {
-            "no-restricted-imports": ["error", {
-                patterns: [{
-                    regex: "^@/(features|auth|shared|database|initialize|db|environment|app\\.module|main|worker)(/|$)",
-                    message: "The UI talks to the backend only through the API: use @/contract types and the client in @/lib/api.",
-                }],
-            }],
-        },
-    },
     {
         // Backend composition (app module, worker, contract): a feature is reached only through
         // its protocol layer — the index (Nest module), its contract, or its outbox handlers.

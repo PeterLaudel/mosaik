@@ -1,0 +1,50 @@
+{
+  "name": "mosaik-ui",
+  "version": "0.5.1",
+  "private": true,
+  "scripts": {
+    "predev": "npm run build -w @peterlaudel/mosaik-contract",
+    "dev": "next dev --turbopack",
+    "prebuild": "npm run build -w @peterlaudel/mosaik-contract",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint --max-warnings=0 .",
+    "pretypecheck": "npm run build -w @peterlaudel/mosaik-contract",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@peterlaudel/mosaik-contract": "*",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@hookform/resolvers": "^5.2.2",
+    "@mui/icons-material": "^9.0.0",
+    "@mui/material": "^9.0.0",
+    "@mui/x-data-grid": "^9.0.2",
+    "@mui/x-date-pickers": "^9.0.2",
+    "@orpc/client": "2.0.0-beta.49",
+    "@orpc/contract": "2.0.0-beta.49",
+    "@orpc/openapi": "2.0.0-beta.49",
+    "@tanstack/react-query": "^5.99.0",
+    "better-auth": "1.7.18",
+    "dayjs": "^1.11.20",
+    "next": "^16.2.4",
+    "react": "19.2.5",
+    "react-dom": "19.2.5",
+    "react-hook-form": "^7.75.0",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.4",
+    "@tailwindcss/postcss": "^4.2.2",
+    "@types/node": "^25",
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
+    "eslint": "^9.39.4",
+    "eslint-config-next": "16.2.4",
+    "globals": "^17.5.0",
+    "postcss": "^8",
+    "tailwindcss": "^4.2.2",
+    "typescript": "^6",
+    "typescript-eslint": "^8.58.2"
+  }
+}

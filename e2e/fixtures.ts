@@ -10,7 +10,6 @@ export const test = baseTest.extend<NonNullable<unknown>>({
     const browserCookies = cookies.map((cookie) => ({ ...cookie, domain: "localhost" }));
     await context.addCookies(browserCookies);
 
-    // eslint-disable-next-line react-hooks/rules-of-hooks
     await use(page);
 
     await clearDatabase(getDb());
