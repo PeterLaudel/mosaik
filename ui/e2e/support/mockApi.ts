@@ -1,27 +1,21 @@
-import type { CompletedRequest, Mockttp } from "mockttp";
+import { createServer, type Server } from "node:http";
 import type { AnySchema, InferRouterContractOutputs, InferSchemaOutput } from "@orpc/contract";
-import { getOpenAPIMeta } from "@orpc/openapi";
+import { OpenAPIHandler } from "@orpc/openapi/node";
+import { implement, ORPCError } from "@orpc/server";
 import { contract, type Contract } from "@peterlaudel/mosaik-contract";
 
 /** Next fixes the /api rewrite target at build time, so the mock listens on the API's default port. */
 export const MOCK_API_PORT = 4000;
 
-// Inputs as the API sees them after parsing (z.coerce leaves the raw input side `unknown`)
+// The input as a handler receives it, after the contract's schema parsed it
 type Input<P> = P extends { "~orpc": { __TInputSchema?: { type: infer S } } }
   ? S extends AnySchema ? InferSchemaOutput<S> : never
   : never;
 type Outputs = InferRouterContractOutputs<Contract>;
 
-export interface Stub<I> {
-  /** What the UI sent, oldest first: JSON body (or query strings for GET) plus path params like `id`. */
-  calls(): Promise<Partial<I>[]>;
-}
-
 export interface MockedProcedure<I, O> {
-  /** Answers with `output`, or with `output(input)` for each request. A later stub wins. */
-  returns(output: O | ((input: Partial<I>) => O)): Promise<Stub<I>>;
-  /** Answers with raw bytes, e.g. a PDF. */
-  replies(body: Buffer, headers: Record<string, string>): Promise<Stub<I>>;
+  /** Answers with `output`, or with `output(input)` for each call. A later stub replaces it. */
+  returns(output: O | ((input: I) => O)): Promise<{ calls(): Promise<I[]> }>;
 }
 
 /** Stubs typed by the contract: `mockApi.patients.filter.returns(...)`. */
@@ -31,55 +25,60 @@ export type MockApi = {
   };
 };
 
-type Method = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
+type Procedures = Record<string, Record<string, { handler(fn: (options: { input: unknown }) => unknown): unknown }>>;
 
-function mockProcedure(server: Mockttp, method: Method, path: string, priority: () => number) {
-  // Numeric ids keep `/invoices/{id}` from matching `/invoices/patients`
-  const params: string[] = [];
-  const pattern = path.replace(/\{(\w+)\}/g, (_, name: string) => {
-    params.push(name);
-    return /id$/i.test(name) ? "([0-9]+)" : "([^/?]+)";
-  });
-  const url = new RegExp(`^https?://[^/]+/api${pattern}(?:\\?.*)?$`);
+/**
+ * The API, served by oRPC from the contract like the real one (same routes, path params,
+ * serialization and input/output validation), but each procedure answers with what the test
+ * stubbed and records the inputs it got. `session` answers better-auth's get-session.
+ */
+export function startMockApi(session: object): { mockApi: MockApi; reset(): void; server: Server } {
+  const stubs = new Map<string, (input: unknown) => unknown>();
+  const calls = new Map<string, unknown[]>();
+  const implementer = implement(contract) as unknown as Procedures;
 
-  const input = async (request: CompletedRequest) => {
-    const text = request.method === "GET" ? "" : await request.body.getText();
-    const payload = request.method === "GET" ? Object.fromEntries(new URL(request.url).searchParams) : JSON.parse(text || "{}");
-    const values = url.exec(request.url)?.slice(1) ?? [];
-    const pathValues = params.map((name, i) => [name, /id$/i.test(name) ? Number(values[i]) : decodeURIComponent(values[i])]);
-    return { ...payload, ...Object.fromEntries(pathValues) } as Record<string, unknown>;
-  };
+  const router: Record<string, Record<string, unknown>> = {};
+  const mockApi: Record<string, Record<string, unknown>> = {};
+  for (const [feature, procedures] of Object.entries(contract)) {
+    router[feature] = {};
+    mockApi[feature] = {};
+    for (const name of Object.keys(procedures)) {
+      const key = `${feature}.${name}`;
+      router[feature][name] = implementer[feature][name].handler(({ input }) => {
+        calls.set(key, [...(calls.get(key) ?? []), input]);
+        const respond = stubs.get(key);
+        if (!respond) {
+          console.error(`Unmocked API call: ${key}`);
+          throw new ORPCError("NOT_IMPLEMENTED", { message: `Unmocked API call: ${key}` });
+        }
+        return respond(input);
+      });
+      mockApi[feature][name] = {
+        returns: (output: unknown) => {
+          stubs.set(key, typeof output === "function" ? (output as (input: unknown) => unknown) : () => output);
+          return Promise.resolve({ calls: () => Promise.resolve(calls.get(key) ?? []) });
+        },
+      };
+    }
+  }
 
-  const stub = async (respond: (request: CompletedRequest) => Promise<{ body: Buffer | string; headers: Record<string, string> }>) => {
-    const builders = { GET: "forGet", POST: "forPost", PUT: "forPut", PATCH: "forPatch", DELETE: "forDelete" } as const;
-    const endpoint = await server[builders[method]](url)
-      .asPriority(priority())
-      .thenCallback(async (request) => ({ statusCode: 200, ...(await respond(request)) }));
-    return { calls: async () => Promise.all((await endpoint.getSeenRequests()).map(input)) };
-  };
-
-  return {
-    returns: (output: unknown) =>
-      stub(async (request) => {
-        const value = typeof output === "function" ? output(await input(request)) : output;
-        // Like the real API: JSON for everything, including null and strings; no body for void
-        if (value === undefined) return { body: "", headers: {} as Record<string, string> };
-        return { body: JSON.stringify(value), headers: { "content-type": "application/json" } };
-      }),
-    replies: (body: Buffer, headers: Record<string, string>) => stub(() => Promise.resolve({ body, headers })),
-  };
-}
-
-export function createMockApi(server: Mockttp): MockApi {
-  let priority = 10;
-  const next = () => ++priority;
-  const features = Object.entries(contract).map(([feature, procedures]) => {
-    const mocked = Object.entries(procedures).map(([name, procedure]) => {
-      const meta = getOpenAPIMeta(procedure);
-      if (!meta?.method || !meta.path) throw new Error(`${feature}.${name} has no OpenAPI route`);
-      return [name, mockProcedure(server, meta.method as Method, meta.path, next)];
+  const handler = new OpenAPIHandler(router as never);
+  const server = createServer((request, response) => {
+    // better-auth's session endpoint isn't part of the contract
+    if (request.url?.startsWith("/api/auth/get-session")) {
+      response.writeHead(200, { "content-type": "application/json" }).end(JSON.stringify(session));
+      return;
+    }
+    void handler.handle(request, response, { prefix: "/api" }).then(({ matched }) => {
+      if (matched) return;
+      console.error(`Unmocked API call: ${request.method} ${request.url}`);
+      response.writeHead(404).end();
     });
-    return [feature, Object.fromEntries(mocked)];
   });
-  return Object.fromEntries(features) as MockApi;
+
+  const reset = () => {
+    stubs.clear();
+    calls.clear();
+  };
+  return { mockApi: mockApi as MockApi, reset, server };
 }

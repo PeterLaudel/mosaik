@@ -13,5 +13,5 @@ test("lists sessions for a patient", async ({ page, mockApi }) => {
   await expect(page.getByRole("row")).toHaveCount(3);
   await expect(page.getByText("Entwurf").first()).toBeVisible();
   const [query] = await filter.calls();
-  expect(query).toMatchObject({ patientId: String(patient.id) });
+  expect(query).toMatchObject({ patientId: patient.id });
 });

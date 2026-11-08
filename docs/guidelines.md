@@ -26,20 +26,20 @@ CI=true npm run e2e # playwright e2e tests (CI=true disables retries and the bro
 
 ## E2e tests cover every UI feature with Playwright, against a mocked API
 
-Every user-facing feature must have Playwright e2e tests in `ui/e2e/<feature>/`. They run the built UI against a mock HTTP server (mockttp) instead of the real API: each test stubs the API responses its flow needs and checks the requests the UI sent. What the API does with them (persistence, filtering, mail content) is covered by the API's own tests.
+Every user-facing feature must have Playwright e2e tests in `ui/e2e/<feature>/`. They run the built UI against a mock API instead of the real one: oRPC serves the contract (same routes and validation as the API), and each procedure answers with what the test stubbed and records what the UI sent. What the API does with them (persistence, filtering, mail content) is covered by the API's own tests.
 
-Use the `test` fixture from `ui/e2e/fixtures.ts`. Its `mockApi` is typed by the oRPC contract, so stubs stop compiling when the contract changes. Build response data with the factories in `ui/e2e/support/factories.ts`.
+Use the `test` fixture from `ui/e2e/fixtures.ts`. Its `mockApi` is typed by the oRPC contract, so stubs stop compiling when the contract changes. Build response data with `fake.*` from `ui/e2e/support/factories.ts`.
 
 ```ts
 import { test, expect } from "../fixtures";
-import { patientFactory, treatmentPlanFactory } from "../support/factories";
+import { fake } from "../support/factories";
 
 test("creates a treatment plan and shows success message", async ({ page, mockApi }) => {
-  const patient = patientFactory.build();
+  const patient = fake.patient();
   await mockApi.patients.find.returns(patient);
   await mockApi.treatmentPlans.findByPatientId.returns(null);
-  const create = await mockApi.treatmentPlans.create.answers(({ patientId, ...data }) =>
-    treatmentPlanFactory.build({ ...data, patient: { id: patientId } }),
+  const create = await mockApi.treatmentPlans.create.returns(({ patientId, ...data }) =>
+    fake.treatmentPlan({ ...data, patient: { id: patientId } }),
   );
 
   await page.goto(`/administration/patients/${patient.id}/treatment-plan`);
@@ -52,9 +52,9 @@ test("creates a treatment plan and shows success message", async ({ page, mockAp
 });
 ```
 
-- `returns(output)` answers every matching request (a later stub wins over an earlier one), `returnsOnce` only the next, `answers(input => output)` computes the reply from the request (e.g. to echo an update), `replies(status, body)` sends raw bytes (PDFs) and `fails(status)` an error.
-- `calls()` returns what the UI sent: the JSON body (or query parameters, as strings, for GET) merged with path parameters such as `id`. When a snackbar from an earlier save may still be showing, wait for the request with `expect.poll` instead of the message.
-- A request no test stubbed is answered with 501 and logged as "Unmocked API call", so a missing stub is easy to spot.
+- `returns(output)` answers every call; `returns(input => output)` computes the reply from the input (e.g. to echo an update). A later stub replaces an earlier one. Outputs are validated against the contract, so a stub with the wrong shape fails the test.
+- `calls()` returns the inputs the UI sent, parsed by the contract (path parameters such as `id` included, numbers as numbers). When a snackbar from an earlier save may still be showing, wait for the request with `expect.poll` instead of the message.
+- A procedure no test stubbed fails and is logged as "Unmocked API call", so a missing stub is easy to spot.
 
 Use `getByRole` with an accessible name as the primary locator. Interactive elements that have no visible label (icon buttons) must carry an `aria-label` so tests can target them without relying on emoji text or DOM structure.
 

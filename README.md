@@ -48,7 +48,7 @@ Auth is enforced in production only (override with `AUTH_REQUIRED=true|false`). 
 
 ### E2E tests
 
-The UI's Playwright tests (`ui/e2e/`) run the production build against a mocked API: a mockttp server on the API's port (4000) that each test stubs through `mockApi`, typed by the oRPC contract. They need no backend or database.
+The UI's Playwright tests (`ui/e2e/`) run the production build against a mocked API: oRPC serves the contract on the API's port (4000) and each test stubs its procedures through `mockApi`, typed by the contract. They need no backend or database.
 
 ```sh
 npm run build          # UI production build

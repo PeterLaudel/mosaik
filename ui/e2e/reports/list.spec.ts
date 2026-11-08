@@ -14,7 +14,7 @@ test("asks the API for finalized sessions only and lists them", async ({ page, m
   await expect(page.getByRole("row")).toHaveCount(2);
   await expect(page.getByRole("gridcell", { name: "2", exact: true })).toBeVisible();
   const [query] = await filter.calls();
-  expect(query).toMatchObject({ patientId: String(patient.id), status: "final" });
+  expect(query).toMatchObject({ patientId: patient.id, status: "final" });
 });
 
 test("enables report generation after selecting all sessions via the header checkbox", async ({ page, mockApi }) => {

@@ -45,7 +45,6 @@
     "eslint": "^9.39.4",
     "eslint-config-next": "16.2.4",
     "globals": "^17.5.0",
-    "mockttp": "^4.6.5",
     "postcss": "^8",
     "tailwindcss": "^4.2.2",
     "typescript": "^6",

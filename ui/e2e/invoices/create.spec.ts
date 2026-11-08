@@ -18,10 +18,7 @@ test("creates an invoice", async ({ page, mockApi }) => {
   await mockApi.invoices.findBillableServices.returns([service]);
   await mockApi.invoices.generateInvoiceNumber.returns("20241010001");
   await mockApi.invoices.findIssuer.returns(fake.issuer());
-  await mockApi.invoices.generatePdf.replies(PDF, {
-    "content-type": "application/pdf",
-    "content-disposition": 'inline; filename="20241010001.pdf"',
-  });
+  await mockApi.invoices.generatePdf.returns(new File([PDF], "20241010001.pdf", { type: "application/pdf" }));
   const created = fake.invoice({ invoiceNumber: "20241010001", patient });
   const create = await mockApi.invoices.create.returns((input) => ({ ...created, ...input }));
   // After saving, the UI opens the new invoice
