@@ -9,6 +9,16 @@ export type MailSender =
 
 const isTestEmail = () => process.env.NODE_ENV === "test";
 
+// With the json transport (e2e) mails stay in memory; e2e reads the last one via testing.ts
+let lastJsonMail: Record<string, unknown> | null = null;
+
+/** Returns the last mail the json transport produced and forgets it. */
+export function takeLastJsonMail(): Record<string, unknown> | null {
+  const mail = lastJsonMail;
+  lastJsonMail = null;
+  return mail;
+}
+
 export default async function mailInvoice(
   therapeut: InvoiceIssuer,
   invoice: Invoice,
@@ -30,7 +40,8 @@ export default async function mailInvoice(
   });
 
   if (transporter.transporter.name === "JSONTransport") {
-    global.lastEmailPreviewUrl = JSON.stringify(info);
+    const { message } = info as unknown as { message: string };
+    lastJsonMail = JSON.parse(message) as Record<string, unknown>;
   }
 }
 

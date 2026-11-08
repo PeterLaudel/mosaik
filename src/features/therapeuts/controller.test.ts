@@ -18,7 +18,7 @@ describe("TherapeutsController", () => {
   it("GET /therapeuts lists therapeuts", async () => {
     const therapeut = await therapeutFactory.create();
 
-    const response = await request(app.getHttpServer()).get("/therapeuts");
+    const response = await request(app.getHttpServer()).get("/api/therapeuts");
 
     expect(response.status).toBe(200);
     expect(response.body).toHaveLength(1);
@@ -30,7 +30,7 @@ describe("TherapeutsController", () => {
     const body = { ...therapeut, city: "Leipzig" };
 
     const response = await request(app.getHttpServer())
-      .put(`/therapeuts/${therapeut.id}`)
+      .put(`/api/therapeuts/${therapeut.id}`)
       .send(body);
 
     expect(response.status).toBe(200);

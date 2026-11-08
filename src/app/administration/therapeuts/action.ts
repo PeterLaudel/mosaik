@@ -1,17 +1,17 @@
 "use server";
 
-import { TherapeutCreate } from "@/features/therapeuts/model";
-import { getTherapeutsService } from "@/features/therapeuts/legacy";
 import { revalidatePath } from "next/cache";
+import { serverApi } from "@/lib/api/server";
+import { TherapeutCreate } from "@/contract";
 
 export async function createTherapeut(data: TherapeutCreate): Promise<void> {
-  const therapeutsService = await getTherapeutsService();
-  await therapeutsService.create(data);
+  const api = await serverApi();
+  await api.therapeuts.create(data);
   revalidatePath("/administration/therapeuts");
 }
 
 export async function updateTherapeut(id: number, data: TherapeutCreate): Promise<void> {
-  const therapeutsService = await getTherapeutsService();
-  await therapeutsService.update({ ...data, id });
+  const api = await serverApi();
+  await api.therapeuts.update({ ...data, id });
   revalidatePath("/administration/therapeuts");
 }

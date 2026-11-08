@@ -21,7 +21,7 @@ describe("SessionsController", () => {
     await sessionFactory.create();
 
     const response = await request(app.getHttpServer()).get(
-      `/sessions?patientId=${session.patientId}`,
+      `/api/sessions?patientId=${session.patientId}`,
     );
 
     expect(response.status).toBe(200);
@@ -32,7 +32,7 @@ describe("SessionsController", () => {
   it("POST /patients/:patientId/sessions creates a draft session", async () => {
     const patient = await patientFactory.create();
 
-    const response = await request(app.getHttpServer()).post(`/patients/${patient.id}/sessions`);
+    const response = await request(app.getHttpServer()).post(`/api/patients/${patient.id}/sessions`);
 
     expect(response.status).toBe(200);
     expect(response.body).toMatchObject({ status: "draft", patient: { id: patient.id } });
@@ -42,7 +42,7 @@ describe("SessionsController", () => {
     const session = await sessionFactory.create({ clinicalNotes: "vorher" });
 
     const response = await request(app.getHttpServer())
-      .patch(`/sessions/${session.id}`)
+      .patch(`/api/sessions/${session.id}`)
       .send({ clinicalNotes: "nachher" });
 
     expect(response.status).toBe(200);

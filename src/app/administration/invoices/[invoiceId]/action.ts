@@ -1,12 +1,12 @@
 "use server";
 
-import { InvoiceCreate } from "@/features/invoices/model";
-import { getInvoicesService } from "@/features/invoices/legacy";
 import { revalidatePath } from "next/cache";
+import { serverApi } from "@/lib/api/server";
+import { InvoiceCreate } from "@/contract";
 
 export async function updateInvoice(id: number, invoice: InvoiceCreate) {
-  const invoicesService = await getInvoicesService();
-  const updatedInvoice = await invoicesService.update({ ...invoice, id });
+  const api = await serverApi();
+  const updatedInvoice = await api.invoices.update({ ...invoice, id });
 
   revalidatePath(`/administration/invoices/${id}`);
 

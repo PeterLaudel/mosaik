@@ -3,14 +3,14 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button, NoSsr } from "@mui/material";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
-import { Invoice } from "@/features/invoices/model";
 import Section from "@/components/section";
 import { InvoiceAction } from "./invoiceAction";
 import { InvoiceStatus } from "./invoiceStatus";
 import { Filter } from "./filter";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import { fetchInvoices, invoicesQueryKey } from "@/features/invoices/queries";
+import { fetchInvoices, invoicesQueryKey } from "@/lib/queries/invoices";
 import { useState } from "react";
+import { Invoice } from "@/contract";
 
 const GermanyCurrencyFormatter = new Intl.NumberFormat("de-DE", {
   style: "currency",

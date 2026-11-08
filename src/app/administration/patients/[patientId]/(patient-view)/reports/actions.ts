@@ -1,11 +1,11 @@
 "use server";
 
-import { getSessionsService } from "@/features/sessions/legacy";
-import { PseudonymizationCheckResult } from "@/features/sessions/service";
+import { serverApi } from "@/lib/api/server";
+import { PseudonymizationCheckResult } from "@/contract";
 
 export async function getPseudonymizedTextForSessions(
   sessionIds: number[],
 ): Promise<PseudonymizationCheckResult> {
-  const sessionsService = await getSessionsService();
-  return sessionsService.getPseudonymizedText(sessionIds);
+  const api = await serverApi();
+  return api.sessions.getPseudonymizedText({ sessionIds });
 }

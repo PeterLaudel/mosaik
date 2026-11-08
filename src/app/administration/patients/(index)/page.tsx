@@ -3,9 +3,9 @@ import {
   HydrationBoundary,
   QueryClient,
 } from "@tanstack/react-query";
-import { getPatientsService } from "@/features/patients/legacy";
-import { patientsQueryKey } from "@/features/patients/queries";
+import { patientsQueryKey } from "@/lib/queries/patients";
 import PatientsList from "./patientsList";
+import { serverApi } from "@/lib/api/server";
 
 export default async function Page({
   searchParams,
@@ -20,8 +20,8 @@ export default async function Page({
   await queryClient.prefetchQuery({
     queryKey: patientsQueryKey(query),
     queryFn: async () => {
-      const patientsService = await getPatientsService();
-      return patientsService.filter(query);
+      const api = await serverApi();
+      return api.patients.filter(query);
     },
   });
 

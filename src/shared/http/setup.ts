@@ -9,8 +9,16 @@ import { AUTH, AUTH_BASE_PATH, type Auth } from "@/auth";
  */
 export const httpOptions: NestApplicationOptions = { bodyParser: false };
 
-/** Mounts better-auth's routes; call before the app initializes so they precede Nest's routes. */
+/** Every API route lives under /api, so the UI can forward one path prefix to the API. */
+export const API_PREFIX = "api";
+
+/**
+ * Mounts better-auth's routes and the /api prefix; call before the app initializes so
+ * better-auth's routes precede Nest's.
+ */
 export function configureHttp(app: INestApplication): void {
+  app.setGlobalPrefix(API_PREFIX);
+
   const auth = app.get<Auth>(AUTH);
   const handler = toNodeHandler(auth);
   const express = app.getHttpAdapter().getInstance() as Express;

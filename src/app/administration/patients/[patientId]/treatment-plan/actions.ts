@@ -1,21 +1,20 @@
 "use server";
 
-import { getTreatmentPlansService } from "@/features/treatment-plans/legacy";
-import { TreatmentPlan } from "@/features/treatment-plans/model";
-import { TreatmentPlanFormData } from "@/features/treatment-plans/service";
+import { serverApi } from "@/lib/api/server";
+import { TreatmentPlan, TreatmentPlanFormData } from "@/contract";
 
 export async function createTreatmentPlan(
   patientId: number,
   data: TreatmentPlanFormData,
 ): Promise<TreatmentPlan> {
-  const treatmentPlansService = await getTreatmentPlansService();
-  return treatmentPlansService.create(patientId, data);
+  const api = await serverApi();
+  return api.treatmentPlans.create({ ...data, patientId });
 }
 
 export async function updateTreatmentPlan(
   id: number,
   data: TreatmentPlanFormData,
 ): Promise<TreatmentPlan> {
-  const treatmentPlansService = await getTreatmentPlansService();
-  return treatmentPlansService.update(id, data);
+  const api = await serverApi();
+  return api.treatmentPlans.update({ ...data, id });
 }

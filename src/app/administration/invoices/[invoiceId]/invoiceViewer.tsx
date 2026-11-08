@@ -1,6 +1,6 @@
 "use client";
+import { Invoice } from "@/contract";
 
-import { Invoice } from "@/features/invoices/model";
 
 interface Props {
   invoice: Invoice;
@@ -11,7 +11,7 @@ export function InvoiceViewer({ invoice }: Props) {
     <iframe
       className="w-full h-full"
       name="pdf-viewer"
-      src={`/api/invoices/${invoice.invoiceNumber}`}
+      src={`/api/invoices/by-number/${invoice.invoiceNumber}/pdf`}
     />
   );
 }

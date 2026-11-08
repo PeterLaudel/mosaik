@@ -11,9 +11,9 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import dayjs from "dayjs";
 import { Fragment } from "react";
 import { Controller, useFieldArray, useFormContext, useWatch } from "react-hook-form";
-import { BillableService, Factor } from "@/features/invoices/model";
 import Section from "@/components/section";
 import type { FormInvoice } from ".";
+import { BillableService, Factor } from "@/contract";
 
 export interface InvoicePosition {
   serviceDate?: string;

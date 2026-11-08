@@ -3,9 +3,9 @@
 import { TextField } from "@mui/material";
 import Autocomplete from "@mui/material/Autocomplete";
 import { Controller, useFormContext } from "react-hook-form";
-import { InvoicePatient } from "@/features/invoices/model";
 import Section from "@/components/section";
 import type { FormInvoice } from ".";
+import { InvoicePatient } from "@/contract";
 
 interface Props {
   patients: InvoicePatient[];

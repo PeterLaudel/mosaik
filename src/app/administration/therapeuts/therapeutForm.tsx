@@ -3,13 +3,13 @@
 import Section from "@/components/section";
 import SubmitButton from "@/components/submitButton";
 import { useSnackbar } from "@/contexts/snackbarProvider";
-import { Therapeut, TherapeutCreate } from "@/features/therapeuts/model";
 import { TextField } from "@mui/material";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { TherapeutFormData, therapeutSchema } from "./validateTherapeut";
+import { Therapeut, TherapeutCreate } from "@/contract";
 
 interface Props {
   action: (data: TherapeutCreate) => Promise<void>;

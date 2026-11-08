@@ -51,12 +51,14 @@ module.exports = defineConfig([
     globalIgnores(["**/*.d.ts", "playwright-report/**", ".next/**", "**/*.js", "dist/**", "packages/*/dist/**"]),
     ...featureBoundaries,
     {
-        files: ["src/app/**/*.{ts,tsx}"],
+        // The UI is an API client: it may use the published contract (@/contract) and nothing
+        // else from the backend, so it can move to its own repository unchanged.
+        files: ["src/{app,components,contexts,lib}/**/*.{ts,tsx}", "src/proxy.ts"],
         rules: {
             "no-restricted-imports": ["error", {
                 patterns: [{
-                    regex: "^@/features/[a-z-]+/(repository|selectors?)$",
-                    message: "The app layer talks to a feature through its service (get*Service from @/features/<feature>/legacy until the UI moves to the oRPC client), not its repository.",
+                    regex: "^@/(features|auth|shared|database|initialize|db|environment|app\\.module|main|worker)(/|$)",
+                    message: "The UI talks to the backend only through the API: use @/contract types and the client in @/lib/api.",
                 }],
             }],
         },

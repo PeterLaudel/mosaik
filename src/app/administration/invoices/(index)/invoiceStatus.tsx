@@ -1,4 +1,3 @@
-import { Invoice } from "@/features/invoices/model";
 import { CheckCircle, Email, HourglassEmpty } from "@mui/icons-material";
 import { Button, Menu, MenuItem } from "@mui/material";
 import { ArrowDropDownIcon } from "@mui/x-date-pickers";
@@ -9,6 +8,7 @@ import {
   markInvoiceAsSent,
 } from "./action";
 import { useQueryClient } from "@tanstack/react-query";
+import { Invoice } from "@/contract";
 
 interface Props {
   invoice: Invoice;

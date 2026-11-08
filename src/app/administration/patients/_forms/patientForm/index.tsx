@@ -10,13 +10,13 @@ import { FormProvider, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import PatientSection from "./patientSection";
 import BillingSection from "./billingSection";
-import { Patient, PatientCreate } from "@/features/patients/model";
 import SubmitButton from "@/components/submitButton";
 import { useSnackbar } from "@/contexts/snackbarProvider";
 import { useRouter } from "next/navigation";
 import { billingInfoIsPatient } from "./billingInfoIsPatient";
 import InvoiceSection from "./invoiceSection";
 import { patientFormSchema, PatientFormData } from "./schema";
+import { Patient, PatientCreate } from "@/contract";
 
 interface Props {
   action: (patient: PatientCreate) => Promise<void>;

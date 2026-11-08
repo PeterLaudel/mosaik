@@ -1,5 +1,5 @@
-import { getSessionsService } from "@/features/sessions/legacy";
 import PatientSessionsList from "../../sessions/patientSessionsList";
+import { serverApi } from "@/lib/api/server";
 
 interface Props {
   params: Promise<{ patientId: string }>;
@@ -8,10 +8,10 @@ interface Props {
 export default async function Page(props: Props) {
   const { patientId } = await props.params;
 
-  const sessionsService = await getSessionsService();
+  const api = await serverApi();
   const [{ rows: sessions }, openSession] = await Promise.all([
-    sessionsService.filter({ patientId: Number(patientId) }),
-    sessionsService.findOpenSession(Number(patientId)),
+    api.sessions.filter({ patientId: Number(patientId) }),
+    api.sessions.findOpenSession({ patientId: Number(patientId) }),
   ]);
 
   return <PatientSessionsList patientId={patientId} initialSessions={sessions} openSession={openSession} />;

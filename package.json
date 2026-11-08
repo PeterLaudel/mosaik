@@ -58,7 +58,6 @@
     "google-auth-library": "^10.6.2",
     "kysely": "^0.28.19",
     "next": "^16.2.4",
-    "next-auth": "^4.24.14",
     "nodemailer": "^7.0.7",
     "pdf-lib": "^1.17.1",
     "pdfkit": "^0.18.0",

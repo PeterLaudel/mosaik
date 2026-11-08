@@ -14,14 +14,8 @@ import {
 import { useFieldArray, useFormContext } from "react-hook-form";
 import Section from "@/components/section";
 import SubmitButton from "@/components/submitButton";
-import {
-  THERAPY_FORMS,
-  TREATMENT_PHASES,
-  GOAL_STATUSES,
-  TherapyForm,
-  TreatmentPhase,
-  GoalStatus,
-} from "@/features/treatment-plans/model";
+import { THERAPY_FORMS, TREATMENT_PHASES, TherapyForm, TreatmentPhase, GoalStatus } from "@/contract";
+import { GOAL_STATUSES } from "@/lib/labels";
 
 export type PlanFormValues = {
   startDate: string;

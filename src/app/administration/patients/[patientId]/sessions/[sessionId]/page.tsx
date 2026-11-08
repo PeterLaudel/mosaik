@@ -1,6 +1,5 @@
-import { getSessionsService } from "@/features/sessions/legacy";
-import { getTreatmentPlansService } from "@/features/treatment-plans/legacy";
 import SessionFormShell from "../_forms/sessionFormShell";
+import { serverApi } from "@/lib/api/server";
 
 interface Props {
   params: Promise<{ patientId: string; sessionId: string }>;
@@ -8,16 +7,13 @@ interface Props {
 
 export default async function Page(props: Props) {
   const { patientId, sessionId } = await props.params;
-  const [sessionsService, treatmentPlansService] = await Promise.all([
-    getSessionsService(),
-    getTreatmentPlansService(),
-  ]);
+  const api = await serverApi();
 
-  const session = await sessionsService.find(Number(sessionId));
+  const session = await api.sessions.find({ id: Number(sessionId) });
 
   const [treatmentPlan, previousSession] = await Promise.all([
-    treatmentPlansService.findByPatientId(Number(patientId)),
-    sessionsService.findPreviousSession(Number(patientId), session.sessionNumber),
+    api.treatmentPlans.findByPatientId({ patientId: Number(patientId) }),
+    api.sessions.findPreviousSession({ patientId: Number(patientId), sessionNumber: session.sessionNumber }),
   ]);
 
   return (

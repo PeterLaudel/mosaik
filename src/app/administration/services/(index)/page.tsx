@@ -3,9 +3,9 @@ import {
   HydrationBoundary,
   QueryClient,
 } from "@tanstack/react-query";
-import { getServicesService } from "@/features/services/legacy";
-import { servicesQueryKey } from "@/features/services/queries";
+import { servicesQueryKey } from "@/lib/queries/services";
 import ServiceList from "./servicesList";
+import { serverApi } from "@/lib/api/server";
 
 export default async function Page() {
   const queryClient = new QueryClient();
@@ -14,8 +14,8 @@ export default async function Page() {
   await queryClient.prefetchQuery({
     queryKey: servicesQueryKey(query),
     queryFn: async () => {
-      const servicesService = await getServicesService();
-      return servicesService.filter(query);
+      const api = await serverApi();
+      return api.services.filter(query);
     },
   });
 

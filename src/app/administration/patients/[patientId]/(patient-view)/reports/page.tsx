@@ -1,5 +1,5 @@
-import { getSessionsService } from "@/features/sessions/legacy";
 import ReportsTab from "./reportsTab";
+import { serverApi } from "@/lib/api/server";
 
 interface Props {
   params: Promise<{ patientId: string }>;
@@ -7,8 +7,8 @@ interface Props {
 
 export default async function Page({ params }: Props) {
   const { patientId } = await params;
-  const sessionsService = await getSessionsService();
-  const { rows: sessions } = await sessionsService.filter({
+  const api = await serverApi();
+  const { rows: sessions } = await api.sessions.filter({
     patientId: Number(patientId),
     status: "final",
   });

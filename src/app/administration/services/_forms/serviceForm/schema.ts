@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { factorArray } from "@/features/services/model";
+import { FACTORS } from "@/contract";
 
 export const serviceSchema = z.object({
   short: z.string().min(1, "Kürzel ist erforderlich"),
@@ -9,7 +9,7 @@ export const serviceSchema = z.object({
   points: z.number().min(0, "Punkte müssen positiv sein"),
   amounts: z.array(
     z.object({
-      factor: z.enum(factorArray),
+      factor: z.enum(FACTORS),
       price: z.number().positive("Preis muss positiv sein").optional(),
     })
   ).length(3),

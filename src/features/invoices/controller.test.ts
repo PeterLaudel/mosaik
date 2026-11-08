@@ -36,7 +36,7 @@ describe("InvoicesController", () => {
   it("GET /invoices/patients is not captured by /invoices/:id", async () => {
     await patientFactory.create();
 
-    const response = await request(app.getHttpServer()).get("/invoices/patients");
+    const response = await request(app.getHttpServer()).get("/api/invoices/patients");
 
     expect(response.status).toBe(200);
     expect(response.body).toHaveLength(1);
@@ -46,7 +46,7 @@ describe("InvoicesController", () => {
     const invoice = await createInvoice();
 
     const response = await request(app.getHttpServer())
-      .put(`/invoices/${invoice.id}/status`)
+      .put(`/api/invoices/${invoice.id}/status`)
       .send({ status: "paid" });
 
     expect(response.status).toBe(200);
@@ -57,7 +57,7 @@ describe("InvoicesController", () => {
     const invoice = await createInvoice();
 
     const response = await request(app.getHttpServer()).get(
-      `/invoices/by-number/${invoice.invoiceNumber}/pdf`,
+      `/api/invoices/by-number/${invoice.invoiceNumber}/pdf`,
     );
 
     expect(response.status).toBe(200);
@@ -77,7 +77,7 @@ describe("InvoicesController", () => {
       await linkGoogleAccount(userId, "google-access-token");
 
       const response = await request(app.getHttpServer())
-        .post(`/invoices/${invoice.id}/send`)
+        .post(`/api/invoices/${invoice.id}/send`)
         .set("Cookie", cookie);
 
       expect(response.status).toBe(200);
@@ -96,7 +96,7 @@ describe("InvoicesController", () => {
     it("answers 401 without a signed-in account, even where auth is optional", async () => {
       const invoice = await createInvoice();
 
-      const response = await request(app.getHttpServer()).post(`/invoices/${invoice.id}/send`);
+      const response = await request(app.getHttpServer()).post(`/api/invoices/${invoice.id}/send`);
 
       expect(response.status).toBe(401);
       expect(mockedMailInvoice).not.toHaveBeenCalled();
