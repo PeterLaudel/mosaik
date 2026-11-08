@@ -1,10 +1,11 @@
 import { Invoice, InvoiceIssuer } from "./model";
 import * as nodemailer from "nodemailer";
-import { googleClientId, googleClientSecret } from "@/environment";
-import { RequestUser } from "@/shared/orpc/context";
 
 /** The signed-in account the invoice is sent from. */
-export type MailSender = Pick<RequestUser, "email" | "provider" | "refreshToken">;
+export type MailSender =
+  | { transport: "gmail"; email: string; accessToken: () => Promise<string> }
+  // Keeps the mail in memory instead of sending it, for e2e tests
+  | { transport: "json"; email: string };
 
 const isTestEmail = () => process.env.NODE_ENV === "test";
 
@@ -47,18 +48,13 @@ async function createTransport(sender: MailSender) {
     });
   }
 
-  if (sender.provider === "google") {
-    return nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        type: "OAuth2",
-        user: sender.email,
-        clientId: googleClientId(),
-        clientSecret: googleClientSecret(),
-        refreshToken: sender.refreshToken,
-      },
-    });
+  if (sender.transport === "json") {
+    return nodemailer.createTransport({ jsonTransport: true });
   }
 
-  return nodemailer.createTransport({ jsonTransport: true });
+  const accessToken = await sender.accessToken();
+  return nodemailer.createTransport({
+    service: "gmail",
+    auth: { type: "OAuth2", user: sender.email, accessToken },
+  });
 }

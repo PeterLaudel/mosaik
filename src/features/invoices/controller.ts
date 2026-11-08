@@ -1,11 +1,20 @@
 import { Controller, Inject } from "@nestjs/common";
 import { Implement } from "@orpc/nest";
 import { ORPCError, implement } from "@orpc/server";
+import { mailTransport } from "@/environment";
+import { RequestAuth } from "@/shared/orpc/context";
 import { invoicesContract } from "./contract";
+import { MailSender } from "./mail";
 import { generateInvoiceBlob } from "./pdf";
 import { InvoicesService } from "./service";
 
 const procedures = implement(invoicesContract);
+
+function mailSender(auth: RequestAuth): MailSender {
+  const { email } = auth.user;
+  if (mailTransport() === "json") return { transport: "json", email };
+  return { transport: "gmail", email, accessToken: () => auth.googleAccessToken() };
+}
 
 function pdfFile(blob: Blob, filename: string): File {
   return new File([blob], filename, { type: "application/pdf" });
@@ -45,8 +54,9 @@ export class InvoicesController {
       ),
       sendByEmail: procedures.sendByEmail.handler(({ input, context }) => {
         // Mail goes out through the signed-in user's Gmail account, even where auth is optional
-        if (!context.user) throw new ORPCError("UNAUTHORIZED");
-        return this.invoicesService.sendByEmail(input.id, context.user);
+        if (!context.auth) throw new ORPCError("UNAUTHORIZED");
+        const sender = mailSender(context.auth);
+        return this.invoicesService.sendByEmail(input.id, sender);
       }),
       delete: procedures.delete.handler(({ input }) => this.invoicesService.delete(input.id)),
     };

@@ -1,10 +1,11 @@
 import { INestApplication } from "@nestjs/common";
 import request from "supertest";
+import { getDb } from "@/initialize";
 import { invoiceFactory } from "factories/invoices";
 import { patientFactory } from "factories/patients";
 import { patientInvoiceFactory } from "factories/patientInvoices";
 import { therapeutFactory } from "factories/therapeuts";
-import { createFeatureApp, sessionCookie, testUser } from "@/shared/testing/featureApp";
+import { createFeatureApp, linkGoogleAccount, signIn, testUser } from "@/shared/testing/featureApp";
 import mailInvoice from "./mail";
 import { InvoicesModule } from "./module";
 
@@ -69,10 +70,11 @@ describe("InvoicesController", () => {
       mockedMailInvoice.mockReset();
     });
 
-    it("sends from the signed-in account and marks the invoice as sent", async () => {
+    it("sends from the signed-in Google account and marks the invoice as sent", async () => {
       await therapeutFactory.create();
       const invoice = await createInvoice();
-      const cookie = await sessionCookie();
+      const { userId, cookie } = await signIn();
+      await linkGoogleAccount(userId, "google-access-token");
 
       const response = await request(app.getHttpServer())
         .post(`/invoices/${invoice.id}/send`)
@@ -80,11 +82,15 @@ describe("InvoicesController", () => {
 
       expect(response.status).toBe(200);
       expect(response.body.status).toBe("sent");
-      expect(mockedMailInvoice).toHaveBeenCalledWith(
-        expect.anything(),
-        expect.objectContaining({ id: invoice.id }),
-        testUser,
-      );
+      const sender = mockedMailInvoice.mock.calls[0][2];
+      expect(sender).toMatchObject({ transport: "gmail", email: testUser.email });
+      // The access token comes from the stored Google account, decrypted by better-auth
+      expect(sender.transport === "gmail" && (await sender.accessToken())).toBe("google-access-token");
+      const stored = await getDb()
+        .selectFrom("auth_accounts")
+        .select("accessToken")
+        .executeTakeFirstOrThrow();
+      expect(stored.accessToken).not.toBe("google-access-token");
     });
 
     it("answers 401 without a signed-in account, even where auth is optional", async () => {

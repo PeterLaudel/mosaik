@@ -8,8 +8,8 @@ export const currentUserSchema = z.object({
   name: z.string(),
 });
 
-// The OAuth redirects (/auth/google, /auth/google/callback, /auth/logout) are plain HTTP routes
-// in controller.ts; they set cookies and redirect, which is not a request/response procedure.
+// Signing in and out goes through better-auth's own routes under /api/auth (use its client);
+// the contract only answers who is signed in, for the UI's server components.
 export const authContract = {
-  me: oc.meta(openapi({ method: "GET", path: "/auth/me" })).output(currentUserSchema),
+  me: oc.meta(openapi({ method: "GET", path: "/me" })).output(currentUserSchema),
 };

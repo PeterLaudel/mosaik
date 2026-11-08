@@ -30,14 +30,17 @@ The database dialect is chosen with `DATABASE_DIALECT` (`sqlite` or `postgres`),
 
 `npm run api` builds and runs the NestJS + oRPC API on [http://localhost:4000](http://localhost:4000), rebuilding on change.
 
-The API owns sign-in: `GET /auth/google` starts Google OAuth, `/auth/google/callback` sets an encrypted `mosaik_session` cookie, `POST /auth/logout` clears it, and `GET /auth/me` returns the signed-in user. Auth is enforced in production only (override with `AUTH_REQUIRED=true|false`); sending an invoice by mail always needs a signed-in account, because it goes out through that account's Gmail.
+The API owns sign-in through [better-auth](https://www.better-auth.com), mounted at `/api/auth/*`: Google sign-in (`POST /api/auth/sign-in/social`, or `signIn.social` from the better-auth client), the OAuth callback, sign-out and `get-session`. Sessions live in the database (`auth_*` tables, migration 0020) and are revocable; Google tokens are stored encrypted. `GET /me` in the oRPC contract returns the signed-in user.
+
+Auth is enforced in production only (override with `AUTH_REQUIRED=true|false`). Sending an invoice by mail always needs a signed-in account, because it goes out through that account's Gmail.
 
 | Variable | Purpose | Default |
 | --- | --- | --- |
-| `SESSION_SECRET` | Encrypts the session cookie | required |
+| `AUTH_SECRET` | Signs session cookies and encrypts stored OAuth tokens | required |
 | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | Google OAuth client | — |
-| `API_PUBLIC_URL` | Public origin of the API; the OAuth callback is `<API_PUBLIC_URL>/auth/google/callback`, which must be registered in the Google Cloud console | `http://localhost:4000` |
-| `UI_URL` | Where the browser lands after sign-in | `http://localhost:3000` |
+| `API_PUBLIC_URL` | Public origin of the API; register `<API_PUBLIC_URL>/api/auth/callback/google` as a redirect URI in the Google Cloud console | `http://localhost:4000` |
+| `UI_URL` | Trusted origin the browser may be sent back to after sign-in | `http://localhost:3000` |
+| `MAIL_TRANSPORT` | `json` keeps mails in memory instead of sending them (e2e) | Gmail |
 
 See [docs/guidelines.md](docs/guidelines.md) for coding conventions and the checks to run before committing.
 

@@ -14,11 +14,7 @@ jest.mock("./encryptPdf", () => ({ encryptPdf: jest.fn() }));
 const mockedMailInvoice = mailInvoice as jest.MockedFunction<typeof mailInvoice>;
 const mockedEncryptPdf = encryptPdf as jest.MockedFunction<typeof encryptPdf>;
 
-const sender = {
-  email: "max.mustermann@example.com",
-  provider: "google",
-  refreshToken: "refresh-token",
-} as const;
+const sender = { transport: "json", email: "max.mustermann@example.com" } as const;
 
 describe("InvoicesService", () => {
   let invoicesService: InvoicesService;

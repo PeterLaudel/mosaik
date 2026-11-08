@@ -39,9 +39,9 @@ export function ollamaModel(): string {
   return process.env.OLLAMA_MODEL || "mistral";
 }
 
-/** Encrypts the API session cookie. */
-export function sessionSecret(): string {
-  return process.env.SESSION_SECRET || "";
+/** better-auth signs session cookies and encrypts stored OAuth tokens with this. */
+export function authSecret(): string {
+  return process.env.AUTH_SECRET || "";
 }
 
 /** Auth is enforced in production only, matching the Next app's previous middleware. */
@@ -58,12 +58,17 @@ export function googleClientSecret(): string {
   return process.env.GOOGLE_CLIENT_SECRET || "";
 }
 
-/** Public origin of the API, used for the OAuth callback URL. */
+/** Public origin of the API; Google redirects to <origin>/api/auth/callback/google. */
 export function apiPublicUrl(): string {
   return process.env.API_PUBLIC_URL || "http://localhost:4000";
 }
 
-/** Origin of the UI, where the browser lands after signing in or out. */
+/** Origin of the UI; better-auth only redirects back to trusted origins. */
 export function uiUrl(): string {
   return process.env.UI_URL || "http://localhost:3000";
+}
+
+/** "json" writes mails to memory instead of sending them (e2e); otherwise Gmail is used. */
+export function mailTransport(): "gmail" | "json" {
+  return process.env.MAIL_TRANSPORT === "json" ? "json" : "gmail";
 }

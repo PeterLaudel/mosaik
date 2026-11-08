@@ -1,6 +1,7 @@
 "use server";
 
 import { getInvoicesService } from "@/features/invoices/legacy";
+import { MailSender } from "@/features/invoices/mail";
 import { revalidatePath } from "next/cache";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/config";
@@ -10,8 +11,11 @@ export async function sendInvoiceEmail(invoiceId: number) {
   if (!session) throw new Error("Not authenticated");
 
   // Until the UI calls the API (stage 1c), the next-auth session supplies the sender
-  const provider = session.provider === "google" ? "google" : "test_provider";
-  const sender = { email: session.user.email, provider, refreshToken: session.refreshToken } as const;
+  const email = session.user.email;
+  const sender: MailSender =
+    session.provider === "google"
+      ? { transport: "gmail", email, accessToken: () => Promise.resolve(session.accessToken) }
+      : { transport: "json", email };
 
   const invoicesService = await getInvoicesService();
   await invoicesService.sendByEmail(invoiceId, sender);

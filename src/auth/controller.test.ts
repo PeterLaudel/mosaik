@@ -1,131 +1,93 @@
 import { INestApplication } from "@nestjs/common";
 import request from "supertest";
 import { PatientsModule } from "@/features/patients";
-import { createFeatureApp, sessionCookie, testUser } from "@/shared/testing/featureApp";
-import { GoogleOAuth } from "./google";
-import { decodeSession } from "./session";
+import { createFeatureApp, signIn, testUser } from "@/shared/testing/featureApp";
 
-const googleAccount = {
-  email: "therapeut@example.com",
-  name: "Dr. Therapeut",
-  refreshToken: "google-refresh-token",
-};
-
-const fakeGoogle = {
-  authorizationUrl: (state: string) => `https://accounts.google.test/auth?state=${state}`,
-  exchangeCode: jest.fn(),
-};
-
-function cookieValue(setCookie: string[] | string | undefined, name: string): string | undefined {
-  const cookies = Array.isArray(setCookie) ? setCookie : [setCookie ?? ""];
-  const cookie = cookies.find((candidate) => candidate.startsWith(`${name}=`));
-  return cookie?.split(";")[0].slice(name.length + 1);
-}
-
-describe("AuthController", () => {
+describe("auth", () => {
   let app: INestApplication;
 
   beforeAll(async () => {
-    app = await createFeatureApp(PatientsModule, (builder) =>
-      builder.overrideProvider(GoogleOAuth).useValue(fakeGoogle),
-    );
+    app = await createFeatureApp(PatientsModule);
   });
 
   afterAll(async () => {
     await app.close();
   });
 
-  beforeEach(() => {
-    fakeGoogle.exchangeCode.mockReset();
-    fakeGoogle.exchangeCode.mockResolvedValue(googleAccount);
-  });
+  describe("GET /me", () => {
+    it("returns the signed-in user", async () => {
+      const { cookie } = await signIn();
 
-  async function startSignIn(returnTo = "/administration/invoices") {
-    const response = await request(app.getHttpServer()).get(`/auth/google?returnTo=${returnTo}`);
-    const location = new URL(response.headers.location);
-    const state = location.searchParams.get("state") ?? "";
-    const stateCookie = cookieValue(response.headers["set-cookie"], "mosaik_oauth");
-    return { response, state, stateCookie };
-  }
-
-  describe("GET /auth/me", () => {
-    it("returns the signed-in user without tokens", async () => {
-      const cookie = await sessionCookie();
-
-      const response = await request(app.getHttpServer()).get("/auth/me").set("Cookie", cookie);
+      const response = await request(app.getHttpServer()).get("/me").set("Cookie", cookie);
 
       expect(response.status).toBe(200);
-      expect(response.body).toEqual({ email: testUser.email, name: testUser.name });
+      expect(response.body).toEqual(testUser);
     });
 
     it("answers 401 without a session", async () => {
-      const response = await request(app.getHttpServer()).get("/auth/me");
+      const response = await request(app.getHttpServer()).get("/me");
+
+      expect(response.status).toBe(401);
+    });
+
+    it("answers 401 for a forged session cookie", async () => {
+      const response = await request(app.getHttpServer())
+        .get("/me")
+        .set("Cookie", "better-auth.session_token=forged.token");
 
       expect(response.status).toBe(401);
     });
   });
 
-  describe("Google sign-in", () => {
-    it("redirects to Google with a state that is also stored in a cookie", async () => {
-      const { response, state, stateCookie } = await startSignIn();
-
-      expect(response.status).toBe(302);
-      expect(response.headers.location).toMatch(/^https:\/\/accounts\.google\.test\/auth/);
-      expect(state).toMatch(/^[0-9a-f]{32}$/);
-      expect(stateCookie).toBeDefined();
-    });
-
-    it("sets the session cookie and returns to the UI after the callback", async () => {
-      const { state, stateCookie } = await startSignIn();
+  describe("better-auth routes", () => {
+    it("serves the session under /api/auth", async () => {
+      const { cookie } = await signIn();
 
       const response = await request(app.getHttpServer())
-        .get(`/auth/google/callback?code=auth-code&state=${state}`)
-        .set("Cookie", `mosaik_oauth=${stateCookie}`);
+        .get("/api/auth/get-session")
+        .set("Cookie", cookie);
 
-      expect(response.status).toBe(302);
-      expect(response.headers.location).toBe("http://localhost:3000/administration/invoices");
-      expect(fakeGoogle.exchangeCode).toHaveBeenCalledWith("auth-code");
-      const session = cookieValue(response.headers["set-cookie"], "mosaik_session") ?? "";
-      expect(await decodeSession(session)).toEqual({ ...googleAccount, provider: "google" });
+      expect(response.status).toBe(200);
+      expect(response.body.user.email).toBe(testUser.email);
     });
 
-    it("rejects a callback whose state does not match the cookie", async () => {
-      const { stateCookie } = await startSignIn();
-
+    it("starts Google sign-in with a redirect back to the UI", async () => {
       const response = await request(app.getHttpServer())
-        .get("/auth/google/callback?code=auth-code&state=forged")
-        .set("Cookie", `mosaik_oauth=${stateCookie}`);
+        .post("/api/auth/sign-in/social")
+        .set("Origin", "http://localhost:3000")
+        .send({ provider: "google", callbackURL: "http://localhost:3000/administration" });
 
-      expect(response.status).toBe(400);
-      expect(fakeGoogle.exchangeCode).not.toHaveBeenCalled();
-    });
-
-    it("rejects a callback without the state cookie", async () => {
-      const { state } = await startSignIn();
-
-      const response = await request(app.getHttpServer()).get(
-        `/auth/google/callback?code=auth-code&state=${state}`,
+      expect(response.status).toBe(200);
+      const authorizationUrl = new URL(response.body.url);
+      expect(authorizationUrl.host).toBe("accounts.google.com");
+      expect(authorizationUrl.searchParams.get("access_type")).toBe("offline");
+      expect(authorizationUrl.searchParams.get("scope")).toContain("https://mail.google.com/");
+      expect(authorizationUrl.searchParams.get("redirect_uri")).toBe(
+        "http://localhost:4000/api/auth/callback/google",
       );
-
-      expect(response.status).toBe(400);
     });
 
-    it("never redirects off-site after sign-in", async () => {
-      const { state, stateCookie } = await startSignIn("//evil.example.com");
-
+    it("refuses to redirect to an untrusted origin after sign-in", async () => {
       const response = await request(app.getHttpServer())
-        .get(`/auth/google/callback?code=auth-code&state=${state}`)
-        .set("Cookie", `mosaik_oauth=${stateCookie}`);
+        .post("/api/auth/sign-in/social")
+        .set("Origin", "http://localhost:3000")
+        .send({ provider: "google", callbackURL: "https://evil.example.com" });
 
-      expect(response.headers.location).toBe("http://localhost:3000/");
+      expect(response.status).toBe(403);
     });
-  });
 
-  it("POST /auth/logout clears the session cookie", async () => {
-    const response = await request(app.getHttpServer()).post("/auth/logout");
+    it("revokes the session on sign-out", async () => {
+      const { cookie } = await signIn();
 
-    expect(response.status).toBe(204);
-    expect(response.headers["set-cookie"]?.[0]).toMatch(/^mosaik_session=;/);
+      const signOut = await request(app.getHttpServer())
+        .post("/api/auth/sign-out")
+        .set("Origin", "http://localhost:3000")
+        .set("Cookie", cookie);
+      const me = await request(app.getHttpServer()).get("/me").set("Cookie", cookie);
+
+      expect(signOut.status).toBe(200);
+      expect(me.status).toBe(401);
+    });
   });
 
   describe("when auth is required", () => {
@@ -144,17 +106,20 @@ describe("AuthController", () => {
     });
 
     it("accepts API calls with a session", async () => {
-      const cookie = await sessionCookie();
+      const { cookie } = await signIn();
 
       const response = await request(app.getHttpServer()).get("/patients").set("Cookie", cookie);
 
       expect(response.status).toBe(200);
     });
 
-    it("keeps the sign-in route open", async () => {
-      const { response } = await startSignIn();
+    it("keeps better-auth's sign-in route open", async () => {
+      const response = await request(app.getHttpServer())
+        .post("/api/auth/sign-in/social")
+        .set("Origin", "http://localhost:3000")
+        .send({ provider: "google", callbackURL: "http://localhost:3000/" });
 
-      expect(response.status).toBe(302);
+      expect(response.status).toBe(200);
     });
   });
 });

@@ -1,17 +1,22 @@
-/**
- * The signed-in user as every oRPC procedure sees it. The auth module puts it on the request;
- * features read it from `context.user` (e.g. invoices send mail from this account).
- */
+/** The signed-in user as every oRPC procedure sees it. */
 export interface RequestUser {
+  id: string;
   email: string;
   name: string;
-  provider: "google" | "test_provider";
-  /** Google OAuth refresh token; nodemailer uses it to send through Gmail. */
-  refreshToken: string;
+}
+
+/**
+ * Put on the request by the auth guard; features read it from `context.auth`
+ * (e.g. invoices send mail from the signed-in Google account).
+ */
+export interface RequestAuth {
+  user: RequestUser;
+  /** A valid Google access token for the user; better-auth refreshes it when it has expired. */
+  googleAccessToken(): Promise<string>;
 }
 
 declare module "@orpc/server" {
   interface DefaultInitialContext {
-    user?: RequestUser;
+    auth?: RequestAuth;
   }
 }
