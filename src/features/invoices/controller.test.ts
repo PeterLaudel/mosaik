@@ -3,11 +3,16 @@ import request from "supertest";
 import { invoiceFactory } from "factories/invoices";
 import { patientFactory } from "factories/patients";
 import { patientInvoiceFactory } from "factories/patientInvoices";
-import { createFeatureApp } from "@/shared/testing/featureApp";
+import { therapeutFactory } from "factories/therapeuts";
+import { createFeatureApp, sessionCookie, testUser } from "@/shared/testing/featureApp";
+import mailInvoice from "./mail";
 import { InvoicesModule } from "./module";
 
 // @libpdf/core pulls a chain of ESM-only crypto packages Jest cannot load; encryption is not under test here
 jest.mock("./encryptPdf", () => ({ encryptPdf: jest.fn() }));
+jest.mock("./mail", () => ({ __esModule: true, default: jest.fn() }));
+
+const mockedMailInvoice = mailInvoice as jest.MockedFunction<typeof mailInvoice>;
 
 describe("InvoicesController", () => {
   let app: INestApplication;
@@ -57,5 +62,38 @@ describe("InvoicesController", () => {
     expect(response.status).toBe(200);
     expect(response.headers["content-type"]).toContain("application/pdf");
     expect(response.body).toEqual(Buffer.from(invoice.base64Pdf, "base64"));
+  });
+
+  describe("POST /invoices/:id/send", () => {
+    beforeEach(() => {
+      mockedMailInvoice.mockReset();
+    });
+
+    it("sends from the signed-in account and marks the invoice as sent", async () => {
+      await therapeutFactory.create();
+      const invoice = await createInvoice();
+      const cookie = await sessionCookie();
+
+      const response = await request(app.getHttpServer())
+        .post(`/invoices/${invoice.id}/send`)
+        .set("Cookie", cookie);
+
+      expect(response.status).toBe(200);
+      expect(response.body.status).toBe("sent");
+      expect(mockedMailInvoice).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({ id: invoice.id }),
+        testUser,
+      );
+    });
+
+    it("answers 401 without a signed-in account, even where auth is optional", async () => {
+      const invoice = await createInvoice();
+
+      const response = await request(app.getHttpServer()).post(`/invoices/${invoice.id}/send`);
+
+      expect(response.status).toBe(401);
+      expect(mockedMailInvoice).not.toHaveBeenCalled();
+    });
   });
 });

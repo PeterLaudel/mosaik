@@ -1,6 +1,6 @@
 import { Controller, Inject } from "@nestjs/common";
 import { Implement } from "@orpc/nest";
-import { implement } from "@orpc/server";
+import { ORPCError, implement } from "@orpc/server";
 import { invoicesContract } from "./contract";
 import { generateInvoiceBlob } from "./pdf";
 import { InvoicesService } from "./service";
@@ -43,9 +43,11 @@ export class InvoicesController {
       updateStatus: procedures.updateStatus.handler(({ input }) =>
         this.invoicesService.updateStatus(input.id, input.status),
       ),
-      sendByEmail: procedures.sendByEmail.handler(({ input }) =>
-        this.invoicesService.sendByEmail(input.id),
-      ),
+      sendByEmail: procedures.sendByEmail.handler(({ input, context }) => {
+        // Mail goes out through the signed-in user's Gmail account, even where auth is optional
+        if (!context.user) throw new ORPCError("UNAUTHORIZED");
+        return this.invoicesService.sendByEmail(input.id, context.user);
+      }),
       delete: procedures.delete.handler(({ input }) => this.invoicesService.delete(input.id)),
     };
   }

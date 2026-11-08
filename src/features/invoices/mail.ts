@@ -1,13 +1,19 @@
 import { Invoice, InvoiceIssuer } from "./model";
 import * as nodemailer from "nodemailer";
+import { googleClientId, googleClientSecret } from "@/environment";
+import { RequestUser } from "@/shared/orpc/context";
+
+/** The signed-in account the invoice is sent from. */
+export type MailSender = Pick<RequestUser, "email" | "provider" | "refreshToken">;
 
 const isTestEmail = () => process.env.NODE_ENV === "test";
 
 export default async function mailInvoice(
   therapeut: InvoiceIssuer,
   invoice: Invoice,
+  sender: MailSender,
 ): Promise<void> {
-  const transporter = await createTransport();
+  const transporter = await createTransport(sender);
   const info = await transporter.sendMail({
     from: `${therapeut.name} ${therapeut.surname} <${therapeut.email}>`,
     to: `${invoice.patient.name} ${invoice.patient.surname} <${invoice.patient.billingInfo.email}>`,
@@ -27,7 +33,7 @@ export default async function mailInvoice(
   }
 }
 
-async function createTransport() {
+async function createTransport(sender: MailSender) {
   if (isTestEmail()) {
     const account = await nodemailer.createTestAccount();
     return nodemailer.createTransport({
@@ -41,31 +47,18 @@ async function createTransport() {
     });
   }
 
-  // Loaded lazily: the session only exists inside the Next app, and next-auth cannot be loaded
-  // by the ESM API bundle. Stage 1b moves auth into the API and passes mail credentials in.
-  const { getServerSession } = await import("next-auth");
-  const { authOptions } = await import("@/app/api/auth/[...nextauth]/config");
-  const session = await getServerSession(authOptions);
-  if (!session) {
-    throw new Error("Not authenticated");
-  }
-
-  if (session.provider === "google") {
+  if (sender.provider === "google") {
     return nodemailer.createTransport({
       service: "gmail",
       auth: {
         type: "OAuth2",
-        user: session.user.email,
-        clientId: process.env.GOOGLE_CLIENT_ID ?? "",
-        clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? "",
-        refreshToken: session.refreshToken,
+        user: sender.email,
+        clientId: googleClientId(),
+        clientSecret: googleClientSecret(),
+        refreshToken: sender.refreshToken,
       },
     });
   }
 
-  if (session.provider === "test_provider") {
-    return nodemailer.createTransport({ jsonTransport: true });
-  }
-
-  throw new Error("Unknown provider");
+  return nodemailer.createTransport({ jsonTransport: true });
 }

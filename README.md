@@ -26,6 +26,19 @@ Open [http://localhost:3000](http://localhost:3000). In development the auth mid
 
 The database dialect is chosen with `DATABASE_DIALECT` (`sqlite` or `postgres`), see `.env.development`.
 
+### API
+
+`npm run api` builds and runs the NestJS + oRPC API on [http://localhost:4000](http://localhost:4000), rebuilding on change.
+
+The API owns sign-in: `GET /auth/google` starts Google OAuth, `/auth/google/callback` sets an encrypted `mosaik_session` cookie, `POST /auth/logout` clears it, and `GET /auth/me` returns the signed-in user. Auth is enforced in production only (override with `AUTH_REQUIRED=true|false`); sending an invoice by mail always needs a signed-in account, because it goes out through that account's Gmail.
+
+| Variable | Purpose | Default |
+| --- | --- | --- |
+| `SESSION_SECRET` | Encrypts the session cookie | required |
+| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | Google OAuth client | — |
+| `API_PUBLIC_URL` | Public origin of the API; the OAuth callback is `<API_PUBLIC_URL>/auth/google/callback`, which must be registered in the Google Cloud console | `http://localhost:4000` |
+| `UI_URL` | Where the browser lands after sign-in | `http://localhost:3000` |
+
 See [docs/guidelines.md](docs/guidelines.md) for coding conventions and the checks to run before committing.
 
 ## Desktop app

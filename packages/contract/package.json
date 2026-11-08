@@ -1,9 +1,11 @@
 {
   "name": "@peterlaudel/mosaik-contract",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "oRPC contract (zod schemas + procedures) of the mosaik API",
   "type": "module",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
