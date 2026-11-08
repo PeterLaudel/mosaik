@@ -2,6 +2,7 @@ import { INestApplication } from "@nestjs/common";
 import request from "supertest";
 import { PatientsModule } from "@/features/patients";
 import { createFeatureApp, signIn, testUser } from "@/shared/testing/featureApp";
+import { getAuth } from "./auth";
 
 describe("auth", () => {
   let app: INestApplication;
@@ -121,5 +122,18 @@ describe("auth", () => {
 
       expect(response.status).toBe(200);
     });
+  });
+});
+
+describe("better-auth storage", () => {
+  it("reads back JSON strings unparsed, as the OAuth callback needs for its state", async () => {
+    const { internalAdapter } = await getAuth().$context;
+    const value = JSON.stringify({ callbackURL: "http://localhost:3000/", codeVerifier: "x" });
+    const expiresAt = new Date(Date.now() + 60_000);
+    await internalAdapter.createVerificationValue({ identifier: "oauth-state", value, expiresAt });
+
+    const stored = await internalAdapter.findVerificationValue("oauth-state");
+
+    expect(stored?.value).toBe(value);
   });
 });
