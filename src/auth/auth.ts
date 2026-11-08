@@ -22,7 +22,9 @@ export function authOptions(): BetterAuthOptions {
     baseURL: apiPublicUrl(),
     basePath: AUTH_BASE_PATH,
     secret: authSecret(),
-    database: { db: getDb(), type },
+    // Without our ParseJSONResultsPlugin: better-auth stores JSON strings (e.g. the OAuth state in
+    // auth_verifications.value) and parses them itself; pre-parsed objects break the callback
+    database: { db: getDb().withoutPlugins(), type },
     // Prefixed so they don't read like the clinical "sessions" table; see migration 0020
     user: { modelName: "auth_users" },
     session: { modelName: "auth_sessions" },
