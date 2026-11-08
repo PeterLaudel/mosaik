@@ -1,15 +1,20 @@
 "use client";
 
 import { Button } from "@mui/material";
-import { signIn, signOut, useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { authClient, signInWithGoogle } from "@/lib/auth/client";
 
 export default function Navbar() {
-  const { status } = useSession();
-
+  const { data: session } = authClient.useSession();
   const pathname = usePathname();
+  const router = useRouter();
+
+  const onSignOut = async () => {
+    await authClient.signOut();
+    router.push("/administration/sign-in");
+  };
 
   const isPatientRoute = /patients/.test(pathname);
   const isInvoiceRoute = /invoice/.test(pathname);
@@ -29,20 +34,16 @@ export default function Navbar() {
             className="w-auto h-10 md:h-12"
           />
         </Link>
-        {status === "authenticated" && (
-          <Button
-            variant="text"
-            className="[grid-area:button]"
-            onClick={() => signOut()}
-          >
+        {session && (
+          <Button variant="text" className="[grid-area:button]" onClick={onSignOut}>
             Abmelden
           </Button>
         )}
-        {status !== "authenticated" && (
+        {!session && (
           <Button
             variant="text"
             className="[grid-area:button]"
-            onClick={() => signIn()}
+            onClick={() => signInWithGoogle(pathname)}
           >
             Anmelden
           </Button>

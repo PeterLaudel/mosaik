@@ -1,4 +1,4 @@
-import { Patient } from "@/features/patients/model";
+import { Patient } from "@/contract";
 
 export function billingInfoIsPatient(patient?: Patient) {
   if (!patient) return true;

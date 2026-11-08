@@ -2,10 +2,10 @@
 
 import { useState, useTransition } from "react";
 import { useForm, FormProvider } from "react-hook-form";
-import { TreatmentPlan } from "@/features/treatment-plans/model";
 import { createTreatmentPlan, updateTreatmentPlan } from "./actions";
 import TreatmentPlanForm, { PlanFormValues } from "./treatmentPlanForm";
 import { useSnackbar } from "@/contexts/snackbarProvider";
+import { TreatmentPlan } from "@/contract";
 
 function toFormValues(plan: TreatmentPlan | null): PlanFormValues {
   return {

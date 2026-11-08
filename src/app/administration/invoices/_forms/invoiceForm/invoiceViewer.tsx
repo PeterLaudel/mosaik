@@ -4,9 +4,10 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useFormContext, useWatch } from "react-hook-form";
 import type { FormInvoice } from ".";
 import type { InvoicePosition } from "./serviceSection";
-import { InvoiceIssuer } from "@/features/invoices/model";
 import { QueryClient, QueryClientProvider, useMutation } from "@tanstack/react-query";
-import { CreatePdfParams } from "@/features/invoices/pdf";
+import type { CreatePdfParams } from "@/contract";
+import { browserApi } from "@/lib/api/client";
+import { InvoiceIssuer } from "@/contract";
 
 interface Props {
   therapeut: InvoiceIssuer;
@@ -32,16 +33,11 @@ function Viewer({ therapeut, invoiceNumber }: Props) {
   const invoiceAmount = useWatch({ control, name: "invoiceAmount" });
 
   const mutation = useMutation({
-    mutationFn: (postData: CreatePdfParams) => {
-      return fetch("/api/invoices/generate", {
-        method: "POST",
-        body: JSON.stringify(postData),
-      }).then(async (res) => {
-        const blob = await res.blob();
-        setData(URL.createObjectURL(blob));
-        const base64 = await blobToBase64(blob);
-        setValue("base64Pdf", base64.split(",")[1]);
-      });
+    mutationFn: async (postData: CreatePdfParams) => {
+      const pdf = await browserApi.invoices.generatePdf(postData);
+      setData(URL.createObjectURL(pdf));
+      const base64 = await blobToBase64(pdf);
+      setValue("base64Pdf", base64.split(",")[1]);
     },
   });
 

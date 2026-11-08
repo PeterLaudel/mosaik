@@ -20,7 +20,7 @@ describe("TreatmentPlansController", () => {
     const plan = await treatmentPlanFactory.create();
 
     const response = await request(app.getHttpServer()).get(
-      `/patients/${plan.patientId}/treatment-plan`,
+      `/api/patients/${plan.patientId}/treatment-plan`,
     );
 
     expect(response.status).toBe(200);
@@ -40,7 +40,7 @@ describe("TreatmentPlansController", () => {
     };
 
     const response = await request(app.getHttpServer())
-      .post(`/patients/${patient.id}/treatment-plan`)
+      .post(`/api/patients/${patient.id}/treatment-plan`)
       .send(body);
 
     expect(response.status).toBe(200);

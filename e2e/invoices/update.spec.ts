@@ -22,7 +22,8 @@ test("sents an invoice email", async ({ page }) => {
 
   await expect(page.getByText("Versendet")).toBeVisible();
 
-  const sendedEmail = await page.request.get("/api/invoices/test"); // wait for email to be sent
+  // The API keeps mails in memory in e2e (MAIL_TRANSPORT=json)
+  const sendedEmail = await page.request.get("/api/testing/emails/last");
   const emailData = await sendedEmail.json();
 
   expect(emailData["from"]).toStrictEqual({

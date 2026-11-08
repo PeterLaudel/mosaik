@@ -1,16 +1,16 @@
 "use server";
 
-import { getInvoicesService } from "@/features/invoices/legacy";
 import InvoiceForm from "../_forms/invoiceForm";
 import { createInvoice } from "./action";
+import { serverApi } from "@/lib/api/server";
 
 export default async function Page() {
-  const invoicesService = await getInvoicesService();
+  const api = await serverApi();
   const [patients, services, invoiceNumber, therapeut] = await Promise.all([
-    invoicesService.findPatients(),
-    invoicesService.findBillableServices(),
-    invoicesService.generateInvoiceNumber(),
-    invoicesService.findIssuer(),
+    api.invoices.findPatients(),
+    api.invoices.findBillableServices(),
+    api.invoices.generateInvoiceNumber(),
+    api.invoices.findIssuer(),
   ]);
   if (!therapeut) {
     return <div>Bitte legen Sie zuerst den Therapeut vollständig an!</div>;

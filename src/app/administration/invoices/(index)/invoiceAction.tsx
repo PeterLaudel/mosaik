@@ -1,9 +1,9 @@
-import { Invoice } from "@/features/invoices/model";
 import { Button, CircularProgress, Dialog, IconButton } from "@mui/material";
 import { Delete, Download, Send } from "@mui/icons-material";
 import { deleteInvoice, sendInvoiceEmail } from "./action";
 import { useState, useTransition } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import { Invoice } from "@/contract";
 
 interface Props {
   invoice: Invoice;
@@ -67,7 +67,7 @@ function SendButton({ invoice }: { invoice: Invoice }) {
 function DownloadButton({ invoice }: { invoice: Invoice }) {
   return (
     <IconButton
-      href={`/api/invoices/${invoice.invoiceNumber}`}
+      href={`/api/invoices/by-number/${invoice.invoiceNumber}/pdf`}
       target="_blank"
       download={true}
     >

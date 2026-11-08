@@ -18,7 +18,7 @@ describe("ServicesController", () => {
   it("GET /services/:id returns the service with its amounts", async () => {
     const amount = await serviceAmountFactory.create({ factor: "2.3" });
 
-    const response = await request(app.getHttpServer()).get(`/services/${amount.serviceId}`);
+    const response = await request(app.getHttpServer()).get(`/api/services/${amount.serviceId}`);
 
     expect(response.status).toBe(200);
     expect(response.body.amounts).toEqual([{ factor: "2.3", price: amount.price }]);
@@ -33,7 +33,7 @@ describe("ServicesController", () => {
       amounts: [{ factor: "1.0", price: 43.72 }],
     };
 
-    const response = await request(app.getHttpServer()).post("/services").send(body);
+    const response = await request(app.getHttpServer()).post("/api/services").send(body);
 
     expect(response.status).toBe(200);
     expect(response.body).toMatchObject(body);

@@ -1,17 +1,17 @@
 "use server";
 
-import { getSessionsService } from "@/features/sessions/legacy";
-import { Session, SessionCreate } from "@/features/sessions/model";
+import { serverApi } from "@/lib/api/server";
+import { Session, SessionCreate } from "@/contract";
 
 export async function createSession(patientId: number): Promise<Session> {
-  const sessionsService = await getSessionsService();
-  return sessionsService.createDraft(patientId);
+  const api = await serverApi();
+  return api.sessions.createDraft({ patientId });
 }
 
 export async function updateSession(
   id: number,
   data: Partial<SessionCreate>,
 ): Promise<Session> {
-  const sessionsService = await getSessionsService();
-  return sessionsService.update(id, data);
+  const api = await serverApi();
+  return api.sessions.update({ ...data, id });
 }

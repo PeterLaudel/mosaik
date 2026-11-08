@@ -9,10 +9,10 @@ import PatientSection from "./patientSection";
 import ServiceSection from "./serviceSection";
 import InvoiceViewer from "./invoiceViewer";
 import SubmitButton from "@/components/submitButton";
-import { InvoiceCreate, BillableService, Invoice, InvoiceIssuer, InvoicePatient } from "@/features/invoices/model";
 import { useSnackbar } from "@/contexts/snackbarProvider";
 import { useRouter } from "next/navigation";
 import type { InvoicePosition } from "./serviceSection";
+import { InvoiceCreate, BillableService, Invoice, InvoiceIssuer, InvoicePatient } from "@/contract";
 
 interface Props {
   action: (invoice: InvoiceCreate) => Promise<Invoice>;

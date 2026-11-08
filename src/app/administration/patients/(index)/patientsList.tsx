@@ -5,10 +5,10 @@ import { Button, NoSsr } from "@mui/material";
 import { useRouter, useSearchParams } from "next/navigation";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import Section from "@/components/section";
-import { Patient } from "@/features/patients/model";
 import { Filter } from "./filter";
-import { patientsQueryKey, fetchPatients } from "@/features/patients/queries";
+import { patientsQueryKey, fetchPatients } from "@/lib/queries/patients";
 import { useState } from "react";
+import { Patient } from "@/contract";
 
 const columns: GridColDef<Patient>[] = [
   { field: "name", headerName: "Name", flex: 1 },

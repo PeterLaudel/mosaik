@@ -17,17 +17,9 @@ import {
 import { useState } from "react";
 import { Controller, useFieldArray, useFormContext } from "react-hook-form";
 import Section from "@/components/section";
-import {
-  Session,
-  SESSION_TYPES,
-  SESSION_PHASES,
-  RISK_LEVELS,
-  INTERVENTIONS,
-  RiskLevel,
-} from "@/features/sessions/model";
-import { HOMEWORK_STATUSES, HomeworkStatus } from "@/features/sessions/homework";
-import { TreatmentPlan, GOAL_STATUSES } from "@/features/treatment-plans/model";
 import { SessionFormValues } from "./sessionFormShell";
+import { Session, SESSION_TYPES, SESSION_PHASES, RiskLevel, HomeworkStatus, TreatmentPlan } from "@/contract";
+import { RISK_LEVELS, INTERVENTIONS, HOMEWORK_STATUSES, GOAL_STATUSES } from "@/lib/labels";
 
 interface Props {
   session: Session;

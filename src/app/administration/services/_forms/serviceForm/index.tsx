@@ -3,7 +3,6 @@
 import Section from "@/components/section";
 import SubmitButton from "@/components/submitButton";
 import { useSnackbar } from "@/contexts/snackbarProvider";
-import { Service, factorArray, ServiceCreate } from "@/features/services/model";
 import { TextField } from "@mui/material";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
@@ -11,6 +10,7 @@ import { useTransition } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { ServiceFormData, serviceSchema } from "./schema";
 import PriceInput from "./priceInput";
+import { Service, FACTORS, ServiceCreate } from "@/contract";
 
 interface Props {
   action: (data: ServiceCreate) => Promise<void>;
@@ -112,7 +112,7 @@ export default function ServiceForm({ action, initialValues }: Props) {
         <Section>
           <h2 className="mb-4">Preise</h2>
           <div className="grid grid-cols-3 gap-4">
-            {factorArray.map((factor, index) => (
+            {FACTORS.map((factor, index) => (
               <Controller
                 key={factor}
                 name={`amounts.${index}.price`}
@@ -145,7 +145,7 @@ function determineDefaultValues(initialValues?: Service): ServiceFormData {
     description: initialValues?.description ?? "",
     note: initialValues?.note,
     points: initialValues?.points ?? 0,
-    amounts: factorArray.map((factor) => ({
+    amounts: FACTORS.map((factor) => ({
       factor,
       price: initialValues?.amounts.find((a) => a.factor === factor)?.price,
     })),

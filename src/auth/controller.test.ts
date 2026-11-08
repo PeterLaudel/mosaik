@@ -18,21 +18,21 @@ describe("auth", () => {
     it("returns the signed-in user", async () => {
       const { cookie } = await signIn();
 
-      const response = await request(app.getHttpServer()).get("/me").set("Cookie", cookie);
+      const response = await request(app.getHttpServer()).get("/api/me").set("Cookie", cookie);
 
       expect(response.status).toBe(200);
       expect(response.body).toEqual(testUser);
     });
 
     it("answers 401 without a session", async () => {
-      const response = await request(app.getHttpServer()).get("/me");
+      const response = await request(app.getHttpServer()).get("/api/me");
 
       expect(response.status).toBe(401);
     });
 
     it("answers 401 for a forged session cookie", async () => {
       const response = await request(app.getHttpServer())
-        .get("/me")
+        .get("/api/me")
         .set("Cookie", "better-auth.session_token=forged.token");
 
       expect(response.status).toBe(401);
@@ -83,7 +83,7 @@ describe("auth", () => {
         .post("/api/auth/sign-out")
         .set("Origin", "http://localhost:3000")
         .set("Cookie", cookie);
-      const me = await request(app.getHttpServer()).get("/me").set("Cookie", cookie);
+      const me = await request(app.getHttpServer()).get("/api/me").set("Cookie", cookie);
 
       expect(signOut.status).toBe(200);
       expect(me.status).toBe(401);
@@ -100,7 +100,7 @@ describe("auth", () => {
     });
 
     it("rejects API calls without a session", async () => {
-      const response = await request(app.getHttpServer()).get("/patients");
+      const response = await request(app.getHttpServer()).get("/api/patients");
 
       expect(response.status).toBe(401);
     });
@@ -108,7 +108,7 @@ describe("auth", () => {
     it("accepts API calls with a session", async () => {
       const { cookie } = await signIn();
 
-      const response = await request(app.getHttpServer()).get("/patients").set("Cookie", cookie);
+      const response = await request(app.getHttpServer()).get("/api/patients").set("Cookie", cookie);
 
       expect(response.status).toBe(200);
     });

@@ -1,6 +1,6 @@
 {
   "name": "@peterlaudel/mosaik-contract",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "oRPC contract (zod schemas + procedures) of the mosaik API",
   "type": "module",
   "files": [

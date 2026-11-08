@@ -41,10 +41,17 @@ export default defineConfig({
     },
   ],
 
-  /* Run your local dev server before starting the tests */
-  webServer: {
-    command: "npm run start",
-    url: "http://localhost:3000",
-    reuseExistingServer: !process.env.CI,
-  },
+    // The UI only talks to the API, so both run: the API (built from src/main.ts) and the Next app
+  webServer: [
+    {
+      command: "npm run api:build && npm run api:start",
+      url: "http://localhost:4000/api/auth/ok",
+      reuseExistingServer: !process.env.CI,
+    },
+    {
+      command: "npm run start",
+      url: "http://localhost:3000",
+      reuseExistingServer: !process.env.CI,
+    },
+  ],
 });

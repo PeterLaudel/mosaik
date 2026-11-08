@@ -19,7 +19,7 @@ describe("PatientsController", () => {
     const patient = await patientFactory.create({ name: "Findme" });
     await patientFactory.create({ name: "Other" });
 
-    const response = await request(app.getHttpServer()).get("/patients?search=Findme");
+    const response = await request(app.getHttpServer()).get("/api/patients?search=Findme");
 
     expect(response.status).toBe(200);
     expect(response.body.total).toBe(1);
@@ -29,20 +29,20 @@ describe("PatientsController", () => {
   it("GET /patients/:id returns the patient", async () => {
     const patient = await patientFactory.create();
 
-    const response = await request(app.getHttpServer()).get(`/patients/${patient.id}`);
+    const response = await request(app.getHttpServer()).get(`/api/patients/${patient.id}`);
 
     expect(response.status).toBe(200);
     expect(response.body.surname).toBe(patient.surname);
   });
 
   it("GET /patients/:id answers 404 for an unknown patient", async () => {
-    const response = await request(app.getHttpServer()).get("/patients/999999");
+    const response = await request(app.getHttpServer()).get("/api/patients/999999");
 
     expect(response.status).toBe(404);
   });
 
   it("POST /patients rejects an invalid body with 400", async () => {
-    const response = await request(app.getHttpServer()).post("/patients").send({ name: "x" });
+    const response = await request(app.getHttpServer()).post("/api/patients").send({ name: "x" });
 
     expect(response.status).toBe(400);
   });

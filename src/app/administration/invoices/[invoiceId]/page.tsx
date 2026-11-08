@@ -1,7 +1,7 @@
-import { getInvoicesService } from "@/features/invoices/legacy";
 import { InvoiceViewer } from "./invoiceViewer";
 import InvoiceForm from "../_forms/invoiceForm";
 import { updateInvoice } from "./action";
+import { serverApi } from "@/lib/api/server";
 
 type Props = {
   params: Promise<{
@@ -10,22 +10,22 @@ type Props = {
 };
 
 export default async function Page({ params }: Props) {
-  const invoicesService = await getInvoicesService();
-  const therapeut = await invoicesService.findIssuer();
+  const api = await serverApi();
+  const therapeut = await api.invoices.findIssuer();
   if (!therapeut) {
     return <div>Bitte legen Sie zuerst den Therapeut vollständig an!</div>;
   }
 
   const { invoiceId } = await params;
-  const invoice = await invoicesService.find(invoiceId);
+  const invoice = await api.invoices.find({ id: invoiceId });
 
   if (invoice.status !== "pending") {
     return <InvoiceViewer invoice={invoice} />;
   }
 
   const [patients, services] = await Promise.all([
-    invoicesService.findPatients(),
-    invoicesService.findBillableServices(),
+    api.invoices.findPatients(),
+    api.invoices.findBillableServices(),
   ]);
 
   return (

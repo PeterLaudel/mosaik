@@ -5,6 +5,12 @@ const nextConfig: NextConfig = {
   output: "standalone",
   // ESM-only; required so Jest (next/jest) transpiles this package from node_modules
   transpilePackages: ["@faker-js/faker"],
+  // The browser talks to the API through this origin: one site, so the session cookie is
+  // first-party and there is no CORS. Server components call API_URL directly.
+  rewrites: () => {
+    const apiUrl = process.env.API_URL || "http://localhost:4000";
+    return Promise.resolve([{ source: "/api/:path*", destination: `${apiUrl}/api/:path*` }]);
+  },
   redirects: () => {
     return Promise.resolve([
       {
