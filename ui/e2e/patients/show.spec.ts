@@ -1,9 +1,9 @@
 import { test, expect } from "../fixtures";
-import { page as resultPage, patientFactory } from "../support/factories";
+import { fake, page as resultPage } from "../support/factories";
 
 test("filter patients", async ({ page, mockApi }) => {
-  const jane = patientFactory.build({ name: "Jane", surname: "Doe" });
-  const john = patientFactory.build({ name: "John", surname: "Doe" });
+  const jane = fake.patient({ name: "Jane", surname: "Doe" });
+  const john = fake.patient({ name: "John", surname: "Doe" });
   await mockApi.patients.filter.returns(resultPage([jane, john]));
 
   await page.goto("/administration/patients");

@@ -1,11 +1,11 @@
 import { test, expect } from "../fixtures";
-import { page as resultPage, patientFactory, sessionFactory } from "../support/factories";
+import { fake, page as resultPage } from "../support/factories";
 
 test("lists sessions for a patient", async ({ page, mockApi }) => {
-  const patient = patientFactory.build();
+  const patient = fake.patient();
   await mockApi.patients.find.returns(patient);
   await mockApi.sessions.findOpenSession.returns(null);
-  const filter = await mockApi.sessions.filter.returns(resultPage(sessionFactory.buildList(2, { status: "draft" })));
+  const filter = await mockApi.sessions.filter.returns(resultPage(Array.from({ length: 2 }, () => fake.session({ status: "draft" }))));
 
   await page.goto(`/administration/patients/${patient.id}/sessions`);
 

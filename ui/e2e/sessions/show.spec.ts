@@ -1,14 +1,14 @@
 import type { Session } from "@peterlaudel/mosaik-contract";
 import type { MockApi } from "../support/mockApi";
 import { test, expect } from "../fixtures";
-import { sessionFactory } from "../support/factories";
+import { fake } from "../support/factories";
 
 async function sessionPage(mockApi: MockApi, overrides: Partial<Session>) {
-  const session = sessionFactory.build(overrides);
+  const session = fake.session(overrides);
   await mockApi.sessions.find.returns(session);
   await mockApi.treatmentPlans.findByPatientId.returns(null);
   await mockApi.sessions.findPreviousSession.returns(null);
-  await mockApi.sessions.update.answers(({ id, ...data }) => ({ ...session, ...data, id: id ?? session.id }) as Session);
+  await mockApi.sessions.update.returns(({ id, ...data }) => ({ ...session, ...data, id: id ?? session.id }) as Session);
   return `/administration/patients/${session.patient.id}/sessions/${session.id}`;
 }
 

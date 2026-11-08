@@ -1,11 +1,11 @@
 import { test, expect } from "../fixtures";
-import { page as resultPage, serviceFactory } from "../support/factories";
+import { fake, page as resultPage } from "../support/factories";
 
 test("updates a service", async ({ page, mockApi }) => {
-  const service = serviceFactory.build({ description: "Old description" });
+  const service = fake.service({ description: "Old description" });
   await mockApi.services.filter.returns(resultPage([service]));
   await mockApi.services.find.returns(service);
-  const update = await mockApi.services.update.answers((input) => ({ ...service, ...input }));
+  const update = await mockApi.services.update.returns((input) => ({ ...service, ...input }));
 
   await page.goto("/administration/services");
   await page.getByRole("gridcell", { name: service.short }).click();

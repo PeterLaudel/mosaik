@@ -1,13 +1,13 @@
 import type { Session } from "@peterlaudel/mosaik-contract";
 import type { MockApi } from "../support/mockApi";
 import { test, expect } from "../fixtures";
-import { page as resultPage, patientFactory, sessionFactory } from "../support/factories";
+import { fake, page as resultPage } from "../support/factories";
 
 const DRAFT_ID = 42;
 
 async function patientWithoutSessions(mockApi: MockApi) {
-  const patient = patientFactory.build({ name: "Anna", surname: "Müller" });
-  const draft = sessionFactory.build({ id: DRAFT_ID, sessionNumber: 1, status: "draft" });
+  const patient = fake.patient({ name: "Anna", surname: "Müller" });
+  const draft = fake.session({ id: DRAFT_ID, sessionNumber: 1, status: "draft" });
   await mockApi.patients.find.returns(patient);
   await mockApi.sessions.filter.returns(resultPage([]));
   await mockApi.sessions.findOpenSession.returns(null);
@@ -16,7 +16,7 @@ async function patientWithoutSessions(mockApi: MockApi) {
   await mockApi.sessions.find.returns(draft);
   await mockApi.treatmentPlans.findByPatientId.returns(null);
   await mockApi.sessions.findPreviousSession.returns(null);
-  const update = await mockApi.sessions.update.answers(({ id, ...data }) => ({ ...draft, ...data, id: id ?? DRAFT_ID }) as Session);
+  const update = await mockApi.sessions.update.returns(({ id, ...data }) => ({ ...draft, ...data, id: id ?? DRAFT_ID }) as Session);
   return { patient, createDraft, update };
 }
 

@@ -1,18 +1,12 @@
 import { test, expect } from "../fixtures";
-import {
-  billableServiceFactory,
-  invoiceFactory,
-  invoicePatientFactory,
-  issuerFactory,
-  page as resultPage,
-} from "../support/factories";
+import { fake, page as resultPage } from "../support/factories";
 
 // A minimal valid PDF for the form's preview
 const PDF = Buffer.from("%PDF-1.1\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n2 0 obj<</Type/Pages/Kids[]/Count 0>>endobj\ntrailer<</Root 1 0 R>>\n%%EOF\n");
 
 test("creates an invoice", async ({ page, mockApi }) => {
-  const patient = invoicePatientFactory.build({ name: "Max", surname: "Mustermann" });
-  const service = billableServiceFactory.build({
+  const patient = fake.invoicePatient({ name: "Max", surname: "Mustermann" });
+  const service = fake.billableService({
     short: "Super short",
     amounts: [
       { factor: "1.0", price: 10 },
@@ -23,13 +17,13 @@ test("creates an invoice", async ({ page, mockApi }) => {
   await mockApi.invoices.findPatients.returns([patient]);
   await mockApi.invoices.findBillableServices.returns([service]);
   await mockApi.invoices.generateInvoiceNumber.returns("20241010001");
-  await mockApi.invoices.findIssuer.returns(issuerFactory.build());
-  await mockApi.invoices.generatePdf.replies(200, PDF, {
+  await mockApi.invoices.findIssuer.returns(fake.issuer());
+  await mockApi.invoices.generatePdf.replies(PDF, {
     "content-type": "application/pdf",
     "content-disposition": 'inline; filename="20241010001.pdf"',
   });
-  const created = invoiceFactory.build({ invoiceNumber: "20241010001", patient });
-  const create = await mockApi.invoices.create.answers((input) => ({ ...created, ...input }));
+  const created = fake.invoice({ invoiceNumber: "20241010001", patient });
+  const create = await mockApi.invoices.create.returns((input) => ({ ...created, ...input }));
   // After saving, the UI opens the new invoice
   await mockApi.invoices.find.returns(created);
 

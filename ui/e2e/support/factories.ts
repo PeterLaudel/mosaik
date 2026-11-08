@@ -1,5 +1,3 @@
-import { faker } from "@faker-js/faker";
-import { Factory } from "fishery";
 import type {
   BillableService,
   Invoice,
@@ -12,102 +10,91 @@ import type {
   TreatmentPlan,
 } from "@peterlaudel/mosaik-contract";
 
-// Builders for API responses, shaped by the contract types. They only create objects for stubs;
-// nothing is stored anywhere.
+// API responses with readable defaults; pass overrides for what a test cares about.
 
-const address = () => ({
-  street: faker.location.streetAddress(),
-  city: faker.location.city(),
-  zip: faker.location.zipCode("#####"),
+let lastId = 0;
+const nextId = () => ++lastId;
+const address = { street: "Musterstraße 1", city: "Musterstadt", zip: "12345" };
+
+const patient = (o: Partial<Patient> = {}): Patient => ({
+  id: nextId(),
+  name: "Max",
+  surname: "Mustermann",
+  email: "max@example.com",
+  birthdate: "1980-01-01",
+  address,
+  diagnosis: null,
+  billingInfo: { name: "Max", surname: "Mustermann", email: "max@example.com", address },
+  invoicePassword: null,
+  ...o,
 });
 
-const isoDate = (date: Date) => date.toISOString().slice(0, 10);
-
-export const patientFactory = Factory.define<Patient>(({ sequence }) => ({
-  id: sequence,
-  name: faker.person.firstName(),
-  surname: faker.person.lastName(),
-  email: faker.internet.email(),
-  birthdate: isoDate(faker.date.birthdate()),
-  address: address(),
-  diagnosis: null,
-  billingInfo: {
-    name: faker.person.firstName(),
-    surname: faker.person.lastName(),
-    email: faker.internet.email(),
-    address: address(),
-  },
-  invoicePassword: null,
-}));
-
-export const serviceFactory = Factory.define<Service>(({ sequence }) => ({
-  id: sequence,
-  short: `P${sequence}`,
-  originalGopNr: String(800 + sequence),
-  description: faker.lorem.words(3),
+const service = (o: Partial<Service> = {}): Service => ({
+  id: nextId(),
+  short: "P1",
+  originalGopNr: "870",
+  description: "Einzelbehandlung",
   points: 750,
-  amounts: [
-    { factor: "1.0", price: 43.72 },
-    { factor: "2.3", price: 100.55 },
-  ],
-}));
+  amounts: [{ factor: "1.0", price: 43.72 }],
+  ...o,
+});
 
-export const therapeutFactory = Factory.define<Therapeut>(({ sequence }) => ({
-  id: sequence,
+const therapeut = (o: Partial<Therapeut> = {}): Therapeut => ({
+  id: nextId(),
   title: "Dr.",
-  name: faker.person.firstName(),
-  surname: faker.person.lastName(),
-  street: faker.location.streetAddress(),
-  zip: faker.location.zipCode("#####"),
-  city: faker.location.city(),
-  email: faker.internet.email(),
-  phone: faker.phone.number(),
-  taxId: faker.string.numeric(11),
+  name: "Erika",
+  surname: "Musterfrau",
+  street: "Praxisweg 2",
+  zip: "12345",
+  city: "Musterstadt",
+  email: "praxis@example.com",
+  phone: "0123 456789",
+  taxId: "12345678901",
   iban: "DE89370400440532013000",
   bic: "COBADEFFXXX",
-  bankName: faker.company.name(),
-  website: faker.internet.url(),
-  enr: faker.string.numeric(9),
-}));
-
-/** The therapeut as the invoices feature sees them (no phone or website). */
-export const issuerFactory = Factory.define<InvoiceIssuer>(() => {
-  const { phone: _phone, website: _website, ...issuer } = therapeutFactory.build();
-  return issuer;
+  bankName: "Musterbank",
+  website: "https://example.com",
+  enr: "123456789",
+  ...o,
 });
 
-export const invoicePatientFactory = Factory.define<InvoicePatient>(() => {
-  const { email: _email, address: _address, ...patient } = patientFactory.build();
-  return patient;
-});
+/** The therapeut as the invoices feature sees them. */
+const issuer = (o: Partial<InvoiceIssuer> = {}): InvoiceIssuer => {
+  const { phone, website, ...rest } = therapeut();
+  return { ...rest, ...o };
+};
 
-export const billableServiceFactory = Factory.define<BillableService>(() => {
-  const { note: _note, points: _points, ...service } = serviceFactory.build();
-  return service;
-});
+const invoicePatient = (o: Partial<InvoicePatient> = {}): InvoicePatient => {
+  const { email, address, ...rest } = patient();
+  return { ...rest, ...o };
+};
 
-export const invoiceFactory = Factory.define<Invoice>(({ sequence }) => {
-  const service = billableServiceFactory.build();
+const billableService = (o: Partial<BillableService> = {}): BillableService => {
+  const { note, points, ...rest } = service();
+  return { ...rest, ...o };
+};
+
+const invoice = (o: Partial<Invoice> = {}): Invoice => {
+  const position = { serviceDate: "2024-01-10", service: billableService(), amount: 1, factor: "1.0" as const, price: 43.72 };
   return {
-    id: sequence,
+    id: nextId(),
     base64Pdf: "JVBERi0xLjEK",
-    invoiceNumber: `2024010${sequence}`,
+    invoiceNumber: "202401101",
     invoiceAmount: 43.72,
     status: "pending",
-    positions: [
-      { serviceDate: "2024-01-10", service, amount: 1, factor: "1.0", price: 43.72 },
-    ],
-    patient: invoicePatientFactory.build(),
+    positions: [position],
+    patient: invoicePatient(),
+    ...o,
   };
-});
+};
 
-export const sessionFactory = Factory.define<Session>(({ sequence }) => {
-  const patient = patientFactory.build();
+const session = (o: Partial<Session> = {}): Session => {
+  const { id, name, surname, birthdate } = patient();
   return {
-    id: sequence,
+    id: nextId(),
     therapeutId: null,
     sessionDate: "2024-01-10",
-    sessionNumber: sequence,
+    sessionNumber: 1,
     durationMinutes: 50,
     sessionType: "Einzelgespräch",
     phase: null,
@@ -120,24 +107,19 @@ export const sessionFactory = Factory.define<Session>(({ sequence }) => {
     status: "draft",
     deletedAt: null,
     createdAt: "2024-01-10T10:00:00.000Z",
-    patient: {
-      id: patient.id,
-      name: patient.name,
-      surname: patient.surname,
-      birthdate: patient.birthdate,
-      address: patient.address,
-    },
+    patient: { id, name, surname, birthdate, address },
     givenHomework: [],
     reviewHomework: [],
     pseudonymizedNotes: null,
     pseudonymizedNextPlan: null,
     pseudonymizationStatus: null,
+    ...o,
   };
-});
+};
 
-export const treatmentPlanFactory = Factory.define<TreatmentPlan>(({ sequence }) => ({
-  id: sequence,
-  patient: { id: sequence },
+const treatmentPlan = (o: Partial<TreatmentPlan> = {}): TreatmentPlan => ({
+  id: nextId(),
+  patient: { id: nextId() },
   therapeutId: null,
   startDate: "2024-01-01",
   endDate: null,
@@ -147,9 +129,11 @@ export const treatmentPlanFactory = Factory.define<TreatmentPlan>(({ sequence })
   notes: null,
   createdAt: "2024-01-01T10:00:00.000Z",
   goals: [],
-}));
+  ...o,
+});
 
-/** A filter response (`{ rows, total }`) for a list of rows. */
-export function page<T>(rows: T[]): { rows: T[]; total: number } {
-  return { rows, total: rows.length };
-}
+/** Response builders: `fake.patient({ name: "Jane" })`. */
+export const fake = { patient, service, therapeut, issuer, invoicePatient, billableService, invoice, session, treatmentPlan };
+
+/** A filter response (`{ rows, total }`). */
+export const page = <T>(rows: T[]) => ({ rows, total: rows.length });

@@ -1,5 +1,5 @@
 import { defineConfig, devices } from "@playwright/test";
-import { MOCK_API_PORT } from "./e2e/support/port";
+import { MOCK_API_PORT } from "./e2e/support/mockApi";
 
 /**
  * E2E tests run the built UI against a mocked API (see e2e/support/mockApi.ts): each test stubs

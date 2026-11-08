@@ -1,9 +1,9 @@
 import { test, expect } from "../fixtures";
-import { therapeutFactory } from "../support/factories";
+import { fake } from "../support/factories";
 
 test("saves a therapeut with empty form", async ({ page, mockApi }) => {
   await mockApi.therapeuts.all.returns([]);
-  const create = await mockApi.therapeuts.create.answers((input) => therapeutFactory.build(input));
+  const create = await mockApi.therapeuts.create.returns((input) => fake.therapeut(input));
 
   await page.goto("/administration/therapeuts");
   await expect(page.getByRole("heading", { name: "Therapeut" })).toBeVisible();
@@ -36,9 +36,9 @@ test("saves a therapeut with empty form", async ({ page, mockApi }) => {
 });
 
 test("updates a therapeut with filled form", async ({ page, mockApi }) => {
-  const therapeut = therapeutFactory.build();
+  const therapeut = fake.therapeut();
   await mockApi.therapeuts.all.returns([therapeut]);
-  const update = await mockApi.therapeuts.update.answers((input) => ({ ...therapeut, ...input }));
+  const update = await mockApi.therapeuts.update.returns((input) => ({ ...therapeut, ...input }));
 
   await page.goto("/administration/therapeuts");
   await expect(page.getByRole("heading", { name: "Therapeut" })).toBeVisible();
@@ -70,7 +70,7 @@ test("updates a therapeut with filled form", async ({ page, mockApi }) => {
 
 test("shows validation errors on invalid form", async ({ page, mockApi }) => {
   await mockApi.therapeuts.all.returns([]);
-  const create = await mockApi.therapeuts.create.answers((input) => therapeutFactory.build(input));
+  const create = await mockApi.therapeuts.create.returns((input) => fake.therapeut(input));
 
   await page.goto("/administration/therapeuts");
   await expect(page.getByRole("heading", { name: "Therapeut" })).toBeVisible();

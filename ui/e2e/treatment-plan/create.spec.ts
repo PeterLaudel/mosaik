@@ -1,15 +1,15 @@
 import type { MockApi } from "../support/mockApi";
 import { test, expect } from "../fixtures";
-import { patientFactory, treatmentPlanFactory } from "../support/factories";
+import { fake } from "../support/factories";
 
 const CREATED_PLAN_ID = 501;
 
 async function patientWithoutPlan(mockApi: MockApi) {
-  const patient = patientFactory.build();
+  const patient = fake.patient();
   await mockApi.patients.find.returns(patient);
   await mockApi.treatmentPlans.findByPatientId.returns(null);
-  const create = await mockApi.treatmentPlans.create.answers(({ patientId, ...data }) =>
-    treatmentPlanFactory.build({ ...data, id: CREATED_PLAN_ID, patient: { id: patientId } }),
+  const create = await mockApi.treatmentPlans.create.returns(({ patientId, ...data }) =>
+    fake.treatmentPlan({ ...data, id: CREATED_PLAN_ID, patient: { id: patientId ?? patient.id } }),
   );
   return { patient, create };
 }
@@ -54,8 +54,8 @@ test("adds a goal and saves the plan", async ({ page, mockApi }) => {
 
 test("second save updates instead of creating a duplicate", async ({ page, mockApi }) => {
   const { patient, create } = await patientWithoutPlan(mockApi);
-  const update = await mockApi.treatmentPlans.update.answers(({ id, ...data }) =>
-    treatmentPlanFactory.build({ ...data, id, patient: { id: patient.id } }),
+  const update = await mockApi.treatmentPlans.update.returns(({ id, ...data }) =>
+    fake.treatmentPlan({ ...data, id, patient: { id: patient.id } }),
   );
 
   await page.goto(`/administration/patients/${patient.id}/treatment-plan`);

@@ -1,11 +1,11 @@
 import type { PseudonymizationCheckResult } from "@peterlaudel/mosaik-contract";
 import type { MockApi } from "../support/mockApi";
 import { test, expect } from "../fixtures";
-import { page as resultPage, patientFactory, sessionFactory } from "../support/factories";
+import { fake, page as resultPage } from "../support/factories";
 
 async function reportFor(mockApi: MockApi, result: PseudonymizationCheckResult) {
-  const patient = patientFactory.build();
-  const session = sessionFactory.build({ status: "final" });
+  const patient = fake.patient();
+  const session = fake.session({ status: "final" });
   await mockApi.patients.find.returns(patient);
   await mockApi.sessions.filter.returns(resultPage([session]));
   const check = await mockApi.sessions.getPseudonymizedText.returns(result);

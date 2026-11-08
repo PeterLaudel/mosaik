@@ -1,11 +1,11 @@
 import { test, expect } from "../fixtures";
-import { page as resultPage, patientFactory, sessionFactory } from "../support/factories";
+import { fake, page as resultPage } from "../support/factories";
 
 test("asks the API for finalized sessions only and lists them", async ({ page, mockApi }) => {
-  const patient = patientFactory.build();
+  const patient = fake.patient();
   await mockApi.patients.find.returns(patient);
   const filter = await mockApi.sessions.filter.returns(
-    resultPage([sessionFactory.build({ status: "final", sessionNumber: 2 })]),
+    resultPage([fake.session({ status: "final", sessionNumber: 2 })]),
   );
 
   await page.goto(`/administration/patients/${patient.id}/reports`);
@@ -18,9 +18,9 @@ test("asks the API for finalized sessions only and lists them", async ({ page, m
 });
 
 test("enables report generation after selecting all sessions via the header checkbox", async ({ page, mockApi }) => {
-  const patient = patientFactory.build();
+  const patient = fake.patient();
   await mockApi.patients.find.returns(patient);
-  await mockApi.sessions.filter.returns(resultPage(sessionFactory.buildList(2, { status: "final" })));
+  await mockApi.sessions.filter.returns(resultPage(Array.from({ length: 2 }, () => fake.session({ status: "final" }))));
 
   await page.goto(`/administration/patients/${patient.id}/reports`);
   await page.getByRole("checkbox", { name: "Select all rows" }).click();

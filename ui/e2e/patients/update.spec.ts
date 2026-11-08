@@ -1,11 +1,11 @@
 import { test, expect } from "../fixtures";
-import { page as resultPage, patientFactory } from "../support/factories";
+import { fake, page as resultPage } from "../support/factories";
 
 test("updates patient", async ({ page, mockApi }) => {
-  const patient = patientFactory.build({ name: "Maximilian", surname: "Thorsten" });
+  const patient = fake.patient({ name: "Maximilian", surname: "Thorsten" });
   await mockApi.patients.filter.returns(resultPage([patient]));
   await mockApi.patients.find.returns(patient);
-  const update = await mockApi.patients.update.answers((input) => ({ ...patient, ...input }));
+  const update = await mockApi.patients.update.returns((input) => ({ ...patient, ...input }));
 
   await page.goto("/administration/patients");
   await page.getByText(patient.surname, { exact: true }).click();

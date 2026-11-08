@@ -1,14 +1,14 @@
 import type { TreatmentPlan } from "@peterlaudel/mosaik-contract";
 import type { MockApi } from "../support/mockApi";
 import { test, expect } from "../fixtures";
-import { patientFactory, treatmentPlanFactory } from "../support/factories";
+import { fake } from "../support/factories";
 
 async function patientWithPlan(mockApi: MockApi, overrides: Partial<TreatmentPlan>) {
-  const patient = patientFactory.build();
-  const plan = treatmentPlanFactory.build({ ...overrides, patient: { id: patient.id } });
+  const patient = fake.patient();
+  const plan = fake.treatmentPlan({ ...overrides, patient: { id: patient.id } });
   await mockApi.patients.find.returns(patient);
   await mockApi.treatmentPlans.findByPatientId.returns(plan);
-  const update = await mockApi.treatmentPlans.update.answers(({ id, ...data }) => ({
+  const update = await mockApi.treatmentPlans.update.returns(({ id, ...data }) => ({
     ...plan,
     ...data,
     id: id ?? plan.id,

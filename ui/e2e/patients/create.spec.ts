@@ -1,9 +1,9 @@
 import { test, expect } from "../fixtures";
-import { page as resultPage, patientFactory } from "../support/factories";
+import { fake, page as resultPage } from "../support/factories";
 
 test("creates a patient", async ({ page, mockApi }) => {
   await mockApi.patients.filter.returns(resultPage([]));
-  const create = await mockApi.patients.create.answers((input) => patientFactory.build(input));
+  const create = await mockApi.patients.create.returns((input) => fake.patient(input));
 
   await page.goto("/administration/patients");
   await page.getByRole("button", { name: "Patienten anlegen" }).click();
@@ -20,7 +20,7 @@ test("creates a patient", async ({ page, mockApi }) => {
   await page.getByRole("textbox", { name: "PLZ" }).first().fill("12345");
   await page.getByRole("textbox", { name: "Stadt" }).first().fill("Musterstadt");
 
-  const created = patientFactory.build({ name: "Max", surname: "Mustermann" });
+  const created = fake.patient({ name: "Max", surname: "Mustermann" });
   await mockApi.patients.filter.returns(resultPage([created]));
   await page.getByRole("button", { name: "Anlegen" }).click();
 

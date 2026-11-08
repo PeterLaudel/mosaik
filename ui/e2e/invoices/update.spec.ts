@@ -1,8 +1,8 @@
 import { test, expect } from "../fixtures";
-import { invoiceFactory, page as resultPage } from "../support/factories";
+import { fake, page as resultPage } from "../support/factories";
 
 test("sends an invoice by email", async ({ page, mockApi }) => {
-  const invoice = invoiceFactory.build({ status: "pending" });
+  const invoice = fake.invoice({ status: "pending" });
   await mockApi.invoices.filter.returns(resultPage([invoice]));
   const send = await mockApi.invoices.sendByEmail.returns({ ...invoice, status: "sent" });
 

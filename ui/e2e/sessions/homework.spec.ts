@@ -1,11 +1,11 @@
 import type { Session } from "@peterlaudel/mosaik-contract";
 import { test, expect } from "../fixtures";
-import { page as resultPage, patientFactory, sessionFactory } from "../support/factories";
+import { fake, page as resultPage } from "../support/factories";
 
 test("shows the previous session's homework for review in a new session", async ({ page, mockApi }) => {
-  const patient = patientFactory.build({ name: "Maria", surname: "Schmidt" });
+  const patient = fake.patient({ name: "Maria", surname: "Schmidt" });
   // The API copies the previous session's given homework into the new draft for review
-  const draft = sessionFactory.build({
+  const draft = fake.session({
     id: 77,
     sessionNumber: 2,
     status: "draft",
@@ -28,7 +28,7 @@ test("shows the previous session's homework for review in a new session", async 
 });
 
 test("updates homework review status via toggle and it autosaves", async ({ page, mockApi }) => {
-  const session = sessionFactory.build({
+  const session = fake.session({
     sessionNumber: 2,
     status: "draft",
     reviewHomework: [{ description: "Tagebuch führen", status: "open" }],
@@ -36,7 +36,7 @@ test("updates homework review status via toggle and it autosaves", async ({ page
   await mockApi.sessions.find.returns(session);
   await mockApi.treatmentPlans.findByPatientId.returns(null);
   await mockApi.sessions.findPreviousSession.returns(null);
-  const update = await mockApi.sessions.update.answers(({ id, ...data }) => ({ ...session, ...data, id: id ?? session.id }) as Session);
+  const update = await mockApi.sessions.update.returns(({ id, ...data }) => ({ ...session, ...data, id: id ?? session.id }) as Session);
 
   await page.goto(`/administration/patients/${session.patient.id}/sessions/${session.id}`);
   await expect(page.getByText("Hausaufgaben — Rückschau")).toBeVisible();

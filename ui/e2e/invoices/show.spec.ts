@@ -1,16 +1,16 @@
 import { test, expect } from "../fixtures";
-import { invoiceFactory, invoicePatientFactory, page as resultPage } from "../support/factories";
+import { fake, page as resultPage } from "../support/factories";
 
 function invoicesFor() {
-  const jane = invoiceFactory.build({
+  const jane = fake.invoice({
     invoiceAmount: 100,
     status: "paid",
-    patient: invoicePatientFactory.build({ name: "Jane", surname: "Doe" }),
+    patient: fake.invoicePatient({ name: "Jane", surname: "Doe" }),
   });
-  const john = invoiceFactory.build({
+  const john = fake.invoice({
     invoiceAmount: 200,
     status: "sent",
-    patient: invoicePatientFactory.build({ name: "John", surname: "Doe" }),
+    patient: fake.invoicePatient({ name: "John", surname: "Doe" }),
   });
   return { jane, john };
 }

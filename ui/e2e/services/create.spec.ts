@@ -1,9 +1,9 @@
 import { test, expect } from "../fixtures";
-import { page as resultPage, serviceFactory } from "../support/factories";
+import { fake, page as resultPage } from "../support/factories";
 
 test("creates a service", async ({ page, mockApi }) => {
   await mockApi.services.filter.returns(resultPage([]));
-  const create = await mockApi.services.create.answers((input) => serviceFactory.build(input));
+  const create = await mockApi.services.create.returns((input) => fake.service(input));
 
   await page.goto("/administration/services");
   await page.getByRole("button", { name: "Leistung anlegen" }).click();
@@ -14,7 +14,7 @@ test("creates a service", async ({ page, mockApi }) => {
   await page.getByLabel("Beschreibung").fill("Test Beschreibung");
   await page.getByLabel("Punkte").fill("200");
 
-  await mockApi.services.filter.returns(resultPage([serviceFactory.build({ short: "GOP-1" })]));
+  await mockApi.services.filter.returns(resultPage([fake.service({ short: "GOP-1" })]));
   await page.getByRole("button", { name: "Anlegen" }).click();
 
   await expect(page.getByText("Leistung gespeichert")).toBeVisible();
