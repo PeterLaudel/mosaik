@@ -1,0 +1,52 @@
+name: Publish contract
+
+# Publishes @peterlaudel/mosaik-contract to GitHub Packages whenever main carries a version of
+# packages/contract that is not on the registry yet. Bump the version (npx changeset version, or
+# by hand) in the PR that changes the contract.
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "packages/contract/**"
+      - "src/contract.ts"
+      - "src/features/*/contract.ts"
+  workflow_dispatch:
+
+jobs:
+  publish:
+    name: Build & publish contract
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.14.1
+          registry-url: https://npm.pkg.github.com
+          scope: "@peterlaudel"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build contract
+        run: npm run contract:build
+
+      - name: Publish if this version is new
+        working-directory: packages/contract
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          name=$(node -p "require('./package.json').name")
+          version=$(node -p "require('./package.json').version")
+          if npm view "${name}@${version}" version >/dev/null 2>&1; then
+            echo "${name}@${version} is already published, skipping"
+          else
+            npm publish
+          fi
