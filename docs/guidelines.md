@@ -22,32 +22,45 @@ npm run test        # jest unit/integration tests
 CI=true npm run e2e # playwright e2e tests (CI=true disables retries and the browser)
 ```
 
-`npm run ci` runs typecheck, lint, and unit tests in one command. E2e tests require the dev server to be running and a seeded database, so they are run separately.
+`npm run ci` runs typecheck, lint, and unit tests in one command. E2e tests need a production build of the UI (`npm run build`), so they are run separately.
 
-## E2e tests cover every UI feature with Playwright
+## E2e tests cover every UI feature with Playwright, against a mocked API
 
-Every user-facing feature must have Playwright e2e tests in `e2e/<feature>/`. Tests use the custom `test` fixture from `e2e/fixtures.ts`, which injects an auth cookie and clears the database after each test. Seed data goes through factories — never raw DB calls in spec files.
+Every user-facing feature must have Playwright e2e tests in `ui/e2e/<feature>/`. They run the built UI against a mock HTTP server (mockttp) instead of the real API: each test stubs the API responses its flow needs and checks the requests the UI sent. What the API does with them (persistence, filtering, mail content) is covered by the API's own tests.
+
+Use the `test` fixture from `ui/e2e/fixtures.ts`. Its `mockApi` is typed by the oRPC contract, so stubs stop compiling when the contract changes. Build response data with the factories in `ui/e2e/support/factories.ts`.
 
 ```ts
-import { patientFactory } from "factories/patients";
 import { test, expect } from "../fixtures";
+import { patientFactory, treatmentPlanFactory } from "../support/factories";
 
-test("creates a treatment plan and shows success message", async ({ page }) => {
-  const patient = await patientFactory.create();
+test("creates a treatment plan and shows success message", async ({ page, mockApi }) => {
+  const patient = patientFactory.build();
+  await mockApi.patients.find.returns(patient);
+  await mockApi.treatmentPlans.findByPatientId.returns(null);
+  const create = await mockApi.treatmentPlans.create.answers(({ patientId, ...data }) =>
+    treatmentPlanFactory.build({ ...data, patient: { id: patientId } }),
+  );
+
   await page.goto(`/administration/patients/${patient.id}/treatment-plan`);
-
   await page.getByRole("textbox", { name: "Beginn" }).fill("2024-01-15");
   await page.getByRole("button", { name: "Speichern" }).click();
 
   await expect(page.getByText("Behandlungsplan gespeichert")).toBeVisible();
+  const [body] = await create.calls();
+  expect(body).toMatchObject({ patientId: patient.id, startDate: "2024-01-15" });
 });
 ```
+
+- `returns(output)` answers every matching request (a later stub wins over an earlier one), `returnsOnce` only the next, `answers(input => output)` computes the reply from the request (e.g. to echo an update), `replies(status, body)` sends raw bytes (PDFs) and `fails(status)` an error.
+- `calls()` returns what the UI sent: the JSON body (or query parameters, as strings, for GET) merged with path parameters such as `id`. When a snackbar from an earlier save may still be showing, wait for the request with `expect.poll` instead of the message.
+- A request no test stubbed is answered with 501 and logged as "Unmocked API call", so a missing stub is easy to spot.
 
 Use `getByRole` with an accessible name as the primary locator. Interactive elements that have no visible label (icon buttons) must carry an `aria-label` so tests can target them without relying on emoji text or DOM structure.
 
 Split tests by operation: `create.spec.ts` for creation flows, `update.spec.ts` for edit/delete flows, `show.spec.ts` for read-only display assertions.
 
-E2e tests require a production build (`npm run build`) and run with `CI=true npm run e2e`. They are separate from the unit/integration suite (`npm run ci`) because they need the dev server and a seeded database.
+E2e tests require a production build (`npm run build`) and run with `CI=true npm run e2e`. The mock listens on the API's default port 4000 and the UI on 3000, so stop local dev servers on those ports first.
 
 ## Form save button placement
 

@@ -1,12 +1,12 @@
-import { therapeutFactory } from "factories/therapeuts";
-
 import { test, expect } from "../fixtures";
+import { therapeutFactory } from "../support/factories";
 
-test("saves a therapeut with empty form", async ({ page }) => {
+test("saves a therapeut with empty form", async ({ page, mockApi }) => {
+  await mockApi.therapeuts.all.returns([]);
+  const create = await mockApi.therapeuts.create.answers((input) => therapeutFactory.build(input));
+
   await page.goto("/administration/therapeuts");
-
-  const heading = page.getByRole("heading", { name: "Therapeut" });
-  await expect(heading).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Therapeut" })).toBeVisible();
 
   await page.getByLabel("Titel").fill("Dr.");
   await page.getByLabel("Name", { exact: true }).fill("New Name");
@@ -24,22 +24,28 @@ test("saves a therapeut with empty form", async ({ page }) => {
   await page.getByLabel("ENR").fill("123456789");
   await page.getByRole("button", { name: "Speichern" }).click();
 
-  const successAlert = page.getByText("Therapeut gespeichert");
-  await expect(successAlert).toBeVisible();
+  await expect(page.getByText("Therapeut gespeichert")).toBeVisible();
+  const [body] = await create.calls();
+  expect(body).toMatchObject({
+    title: "Dr.",
+    name: "New Vorname",
+    surname: "New Name",
+    zip: "12345",
+    iban: "DE89370400440532013000",
+  });
 });
 
-test("updates a therapeut with filled form", async ({ page }) => {
-  const therapeut = await therapeutFactory.create({});
+test("updates a therapeut with filled form", async ({ page, mockApi }) => {
+  const therapeut = therapeutFactory.build();
+  await mockApi.therapeuts.all.returns([therapeut]);
+  const update = await mockApi.therapeuts.update.answers((input) => ({ ...therapeut, ...input }));
 
   await page.goto("/administration/therapeuts");
-  const heading = page.getByRole("heading", { name: "Therapeut" });
-  await expect(heading).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Therapeut" })).toBeVisible();
 
   await expect(page.getByLabel("Titel")).toHaveValue(therapeut.title);
   await expect(page.getByLabel("Vorname")).toHaveValue(therapeut.name);
-  await expect(page.getByLabel("Name", { exact: true })).toHaveValue(
-    therapeut.surname
-  );
+  await expect(page.getByLabel("Name", { exact: true })).toHaveValue(therapeut.surname);
   await expect(page.getByLabel("Straße")).toHaveValue(therapeut.street);
   await expect(page.getByLabel("PLZ")).toHaveValue(therapeut.zip);
   await expect(page.getByLabel("Ort")).toHaveValue(therapeut.city);
@@ -55,25 +61,24 @@ test("updates a therapeut with filled form", async ({ page }) => {
   await page.getByLabel("Name", { exact: true }).fill("new name");
   await page.getByLabel("Vorname").fill("new vorname");
   await page.getByLabel("PLZ").fill("54321");
-
   await page.getByRole("button", { name: "Speichern" }).click();
 
-  const successAlert = page.getByText("Therapeut gespeichert");
-  await expect(successAlert).toBeVisible();
+  await expect(page.getByText("Therapeut gespeichert")).toBeVisible();
+  const [body] = await update.calls();
+  expect(body).toMatchObject({ id: therapeut.id, surname: "new name", name: "new vorname", zip: "54321" });
 });
 
-test("shows validation errors on invalid form", async ({ page }) => {
-  await page.goto("/administration/therapeuts");
+test("shows validation errors on invalid form", async ({ page, mockApi }) => {
+  await mockApi.therapeuts.all.returns([]);
+  const create = await mockApi.therapeuts.create.answers((input) => therapeutFactory.build(input));
 
-  const heading = page.getByRole("heading", { name: "Therapeut" });
-  await expect(heading).toBeVisible();
+  await page.goto("/administration/therapeuts");
+  await expect(page.getByRole("heading", { name: "Therapeut" })).toBeVisible();
 
   await page.getByRole("button", { name: "Speichern" }).click();
 
   await expect(page.getByText("Titel ist erforderlich")).toBeVisible();
-  await expect(
-    page.getByText("Name ist erforderlich", { exact: true })
-  ).toBeVisible();
+  await expect(page.getByText("Name ist erforderlich", { exact: true })).toBeVisible();
   await expect(page.getByText("Vorname ist erforderlich")).toBeVisible();
   await expect(page.getByText("Straße ist erforderlich")).toBeVisible();
   await expect(page.getByText("PLZ ist erforderlich")).toBeVisible();
@@ -86,4 +91,5 @@ test("shows validation errors on invalid form", async ({ page }) => {
   await expect(page.getByText("BIC ist erforderlich")).toBeVisible();
   await expect(page.getByText("Webseite ist ungültig")).toBeVisible();
   await expect(page.getByText("ENR ist erforderlich")).toBeVisible();
+  expect(await create.calls()).toHaveLength(0);
 });

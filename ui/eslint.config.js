@@ -25,6 +25,14 @@ module.exports = defineConfig([
     },
     ...nextCoreWebVitals,
     globalIgnores(["**/*.d.ts", ".next/**", "**/*.js"]),
+    {
+        // Playwright fixtures: `use` is not a React hook, and `({}, use)` is Playwright's required form
+        files: ["e2e/**/*.ts"],
+        rules: {
+            "react-hooks/rules-of-hooks": "off",
+            "no-empty-pattern": "off",
+        },
+    },
     ...tseslint.config(
         ...tseslint.configs.recommendedTypeChecked,
         {

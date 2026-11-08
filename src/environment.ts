@@ -68,7 +68,7 @@ export function uiUrl(): string {
   return process.env.UI_URL || "http://localhost:3000";
 }
 
-/** "json" writes mails to memory instead of sending them (e2e); otherwise Gmail is used. */
+/** "json" builds mails without sending them (e.g. locally without Gmail); otherwise Gmail is used. */
 export function mailTransport(): "gmail" | "json" {
   return process.env.MAIL_TRANSPORT === "json" ? "json" : "gmail";
 }
