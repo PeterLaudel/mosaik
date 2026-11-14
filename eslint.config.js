@@ -6,7 +6,7 @@ const fs = require("fs");
 const path = require("path");
 
 // Features share data (the database), not code: a feature may not import another feature.
-// The app module composes them; the UI (ui/) has its own config and reaches them only via the API.
+// The app module composes them; the UI (mosaik-ui) reaches them only through the API.
 const features = fs
     .readdirSync(path.join(__dirname, "src/features"), { withFileTypes: true })
     .filter((entry) => entry.isDirectory())
@@ -46,7 +46,7 @@ module.exports = defineConfig([
             "no-param-reassign": ["error", { props: true }],
         },
     },
-    globalIgnores(["**/*.d.ts", "playwright-report/**", ".next/**", "**/*.js", "dist/**", "packages/*/dist/**", "ui/**"]),
+    globalIgnores(["**/*.d.ts", "playwright-report/**", "**/*.js", "dist/**", "packages/*/dist/**"]),
     ...featureBoundaries,
     {
         // Backend composition (app module, worker, contract): a feature is reached only through
