@@ -13,6 +13,7 @@ jobs:
       contents: write
       id-token: write
     with:
-      e2e: true
+      # The UI and its e2e tests live in mosaik-ui
+      e2e: false
   
   

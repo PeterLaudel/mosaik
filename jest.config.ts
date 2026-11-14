@@ -36,7 +36,7 @@ const swc = [
 const config: Config = {
   testEnvironment: "node",
   setupFilesAfterEnv: ["<rootDir>/jest.setup.ts"],
-  testPathIgnorePatterns: ["/node_modules/", "/e2e/", "/ui/", "/dist/"],
+  testPathIgnorePatterns: ["/node_modules/", "/dist/"],
   moduleNameMapper: {
     "^@/(.*)$": "<rootDir>/src/$1",
     "^factories/(.*)$": "<rootDir>/factories/$1",
