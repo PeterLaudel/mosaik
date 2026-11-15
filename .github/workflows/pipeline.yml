@@ -15,5 +15,7 @@ jobs:
     with:
       # The UI and its e2e tests live in mosaik-ui
       e2e: false
+      # Checks run on the self-hosted runner (the Mac); image push and deploy stay on GitHub's
+      runner: self-hosted
   
   

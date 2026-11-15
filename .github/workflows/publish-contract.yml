@@ -16,7 +16,8 @@ on:
 jobs:
   publish:
     name: Build & publish contract
-    runs-on: ubuntu-latest
+    # The self-hosted runner (the Mac)
+    runs-on: self-hosted
     permissions:
       contents: read
       packages: write
